@@ -1,0 +1,436 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                  String          @id @default(uuid())
+  firstName           String?
+  lastName            String?
+  name                String
+  email               String          @unique
+  password            String
+  role                String          @default("SALES_AGENT")
+  roleId              String?
+  roleRef             Role?           @relation(fields: [roleId], references: [id])
+  departmentId        String?
+  department          Department?     @relation("UserDepartment", fields: [departmentId], references: [id])
+  teamId              String?
+  team                Team?           @relation("UserTeam", fields: [teamId], references: [id])
+  managerId           String?
+  manager             User?           @relation("UserManager", fields: [managerId], references: [id])
+  subordinates        User[]          @relation("UserManager")
+  employeeId          String?
+  status              String          @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED, INVITED
+  jobTitle            String?
+  phone               String?
+  whatsappNumber      String?
+  avatar              String?
+  notes               String?
+  active              Boolean         @default(true)
+  lastLoginAt         DateTime?
+  passwordChangedAt   DateTime?
+  invitationToken     String?
+  invitationExpiresAt DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  assignedLeads       Lead[]          @relation("AgentLeads")
+  assignedCustomers   Customer[]      @relation("AgentCustomers")
+  assignedDeals       Deal[]          @relation("AgentDeals")
+  managedDeals        Deal[]          @relation("ManagerDeals")
+  assignedVisits      SiteVisit[]     @relation("AgentVisits")
+  assignedTasks       Task[]          @relation("AgentTasks")
+  assignedProperties   Property[]      @relation("AgentProperties")
+  communications      Communication[] @relation("AgentComms")
+  agentCommissions    Commission[]    @relation("AgentCommissions")
+  managedCommissions   Commission[]    @relation("ManagerCommissions")
+  notifications       Notification[]
+  activityLogs        ActivityLog[]
+  sessions            UserSession[]
+  notificationPrefs   NotificationPreference[]
+  auditLogs           AuditLog[]      @relation("ActorAuditLogs")
+  managedDepartments  Department[]    @relation("DepartmentManager")
+  ledTeams            Team[]          @relation("TeamLeader")
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  managerId   String?
+  manager     User?    @relation("DepartmentManager", fields: [managerId], references: [id])
+  createdAt   DateTime @default(now())
+
+  users       User[]   @relation("UserDepartment")
+  teams       Team[]
+}
+
+model Team {
+  id           String      @id @default(uuid())
+  name         String
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  leaderId     String?
+  leader       User?       @relation("TeamLeader", fields: [leaderId], references: [id])
+  createdAt    DateTime    @default(now())
+
+  users        User[]      @relation("UserTeam")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  permissions String   // JSON string array of MODULE.ACTION strings
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  users       User[]
+}
+
+model UserSession {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  token      String   @unique
+  ipAddress  String?
+  deviceInfo String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+}
+
+model Society {
+  id               String     @id @default(uuid())
+  name             String
+  city             String
+  location         String
+  developer        String?    @default("Private Developer")
+  nocStatus        String?    @default("CDA Approved")
+  devStatus        String?    @default("100% Developed")
+  blocks           String?    @default("Block A, Block B, Block C")
+  priceRangeMin    Float?     @default(4500000)
+  priceRangeMax    Float?     @default(35000000)
+  installmentPlans String?
+  notes            String?
+  documents        String?
+  latitude         Float?
+  longitude        Float?
+  description      String?
+  totalPlots       Int        @default(0)
+  image            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  properties  Property[]
+}
+
+model Property {
+  id             String      @id @default(uuid())
+  title          String
+  plotNumber     String?
+  block          String?
+  sector         String?
+  street         String?
+  propertyType   String      @default("RESIDENTIAL_PLOT")
+  size           Float
+  sizeUnit       String      @default("MARLA")
+  demandPrice    Float
+  marketPrice    Float?
+  status         String      @default("AVAILABLE")
+  city           String      @default("Islamabad")
+  societyId      String?
+  society        Society?    @relation(fields: [societyId], references: [id])
+  ownerName      String?
+  ownerPhone     String?
+  dealerName     String?
+  dealerPhone    String?
+  agentId        String?
+  agent          User?       @relation("AgentProperties", fields: [agentId], references: [id])
+  commissionRate Float       @default(1.0)
+  description    String?
+  images         String?
+  galleryImages  String?
+  documents      String?
+  latitude       Float?
+  longitude      Float?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  deals          Deal[]
+  siteVisits     SiteVisit[]
+  payments       Payment[]
+}
+
+model Lead {
+  id               String      @id @default(uuid())
+  name             String
+  phone            String
+  email            String?
+  stage            String      @default("NEW")
+  source           String      @default("WEBSITE")
+  score            Int         @default(50)
+  budgetMin        Float?
+  budgetMax        Float?
+  preferredType    String?
+  preferredSize    String?
+  preferredSociety String?
+  notes            String?
+  assignedAgentId  String?
+  assignedAgent    User?       @relation("AgentLeads", fields: [assignedAgentId], references: [id])
+  assignedAt       DateTime?   @default(now())
+  lastContactedAt  DateTime?
+  slaStatus        String?     @default("ON_TRACK") // ON_TRACK, WARNING, BREACHED_24H, REASSIGNED
+  previousAgentId  String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  customers        Customer[]
+  deals            Deal[]
+  siteVisits       SiteVisit[]
+  tasks            Task[]
+  communications   Communication[]
+}
+
+model Customer {
+  id              String      @id @default(uuid())
+  name            String
+  phone           String
+  email           String?
+  cnic            String?
+  address         String?
+  city            String?     @default("Islamabad")
+  leadId          String?
+  lead            Lead?       @relation(fields: [leadId], references: [id])
+  assignedAgentId String?
+  assignedAgent   User?       @relation("AgentCustomers", fields: [assignedAgentId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  deals           Deal[]
+  communications  Communication[]
+  payments        Payment[]
+}
+
+model Deal {
+  id                  String       @id @default(uuid())
+  title               String
+  leadId              String?
+  lead                Lead?        @relation(fields: [leadId], references: [id])
+  customerId          String?
+  customer            Customer?    @relation(fields: [customerId], references: [id])
+  propertyId          String
+  property            Property     @relation(fields: [propertyId], references: [id])
+  agentId             String
+  agent               User         @relation("AgentDeals", fields: [agentId], references: [id])
+  managerId           String?
+  manager             User?        @relation("ManagerDeals", fields: [managerId], references: [id])
+  sellerName          String?
+  sellerPhone         String?
+  amount              Float
+  tokenAmount         Float        @default(0)
+  stage               String       @default("PROSPECTING")
+  agreedCommission    Float        @default(1.0)
+  expectedClosingDate DateTime?
+  notes               String?
+  documents           String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  tasks               Task[]
+  payments            Payment[]
+  installments        Installment[]
+  commissions         Commission[]
+  siteVisits          SiteVisit[]
+}
+
+model SiteVisit {
+  id               String   @id @default(uuid())
+  leadId           String
+  lead             Lead     @relation(fields: [leadId], references: [id])
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id])
+  dealId           String?
+  deal             Deal?    @relation(fields: [dealId], references: [id])
+  agentId          String
+  agent            User     @relation("AgentVisits", fields: [agentId], references: [id])
+  scheduledAt      DateTime
+  status           String   @default("SCHEDULED")
+  customerFeedback String?
+  interestLevel    String?  @default("WARM")
+  nextAction       String?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Task {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  dueDate      DateTime
+  priority     String   @default("MEDIUM")
+  status       String   @default("PENDING")
+  assignedToId String
+  assignedTo   User     @relation("AgentTasks", fields: [assignedToId], references: [id])
+  leadId       String?
+  lead         Lead?    @relation(fields: [leadId], references: [id])
+  dealId       String?
+  deal         Deal?    @relation(fields: [dealId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Communication {
+  id          String   @id @default(uuid())
+  type        String   @default("WHATSAPP")
+  channel     String   @default("WHATSAPP")
+  direction   String   @default("OUTBOUND")
+  summary     String
+  messageText String?
+  status      String   @default("DELIVERED")
+  attachments String?
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id])
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  agentId     String
+  agent       User     @relation("AgentComms", fields: [agentId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("IN_APP")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  subject   String
+  bodyHtml  String
+  variables String?  // JSON array of variables e.g. ["first_name", "agent_name"]
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model EmailQueue {
+  id           String    @id @default(uuid())
+  recipient    String
+  subject      String
+  bodyHtml     String
+  templateSlug String?
+  status       String    @default("PENDING") // PENDING, SENDING, SENT, DELIVERED, FAILED
+  attempts     Int       @default(0)
+  error        String?
+  createdAt    DateTime  @default(now())
+  sentAt       DateTime?
+}
+
+model NotificationPreference {
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  event     String
+  email     Boolean @default(true)
+  inApp     Boolean @default(true)
+  whatsapp  Boolean @default(false)
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String?
+  actor       User?    @relation("ActorAuditLogs", fields: [actorId], references: [id])
+  action      String
+  targetType  String
+  targetId    String?
+  ipAddress   String?  @default("127.0.0.1")
+  deviceInfo  String?  @default("Antigravity Browser / macOS")
+  beforeValue String?  // JSON string
+  afterValue  String?  // JSON string
+  createdAt   DateTime @default(now())
+}
+
+model Payment {
+  id              String    @id @default(uuid())
+  dealId          String?
+  deal            Deal?     @relation(fields: [dealId], references: [id])
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  propertyId      String?
+  property        Property? @relation(fields: [propertyId], references: [id])
+  amount          Float
+  paymentMethod   String    @default("Bank Transfer")
+  referenceNumber String?
+  status          String    @default("PAID")
+  paidAt          DateTime  @default(now())
+  receiptNumber   String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Installment {
+  id                String    @id @default(uuid())
+  dealId            String
+  deal              Deal      @relation(fields: [dealId], references: [id])
+  installmentNumber Int
+  totalAmount       Float     @default(0)
+  downPayment       Float     @default(0)
+  remainingAmount   Float     @default(0)
+  installmentAmount Float     @default(0)
+  frequency         String    @default("Quarterly")
+  dueDate           DateTime
+  paidAmount        Float     @default(0)
+  outstandingAmount Float     @default(0)
+  status            String    @default("UPCOMING")
+  paidAt            DateTime?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Commission {
+  id                   String    @id @default(uuid())
+  dealId               String
+  deal                 Deal      @relation(fields: [dealId], references: [id])
+  agentId              String
+  agent                User      @relation("AgentCommissions", fields: [agentId], references: [id])
+  managerId            String?
+  manager              User?     @relation("ManagerCommissions", fields: [managerId], references: [id])
+  totalDealCommission  Float     @default(0)
+  companyShare         Float     @default(0)
+  agentShare           Float     @default(0)
+  managerShare         Float     @default(0)
+  companyRetained      Float     @default(0)
+  amount               Float     @default(0)
+  percentage           Float     @default(1.0)
+  status               String    @default("PENDING")
+  paidAt               DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  entityType  String
+  entityId    String
+  action      String
+  description String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}

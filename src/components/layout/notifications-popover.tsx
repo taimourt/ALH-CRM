@@ -94,7 +94,8 @@ export function NotificationsPopover() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const prevUnreadCountRef = useRef(0);
+  const prevUnreadCountRef = useRef(-1);
+  const isFirstLoadRef = useRef(true);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async (isManualRefresh = false) => {
@@ -106,12 +107,16 @@ export function NotificationsPopover() {
         const list: NotificationItem[] = data.notifications || [];
         const count = data.unreadCount !== undefined ? data.unreadCount : list.filter((n) => !n.read).length;
 
-        // Play audio chime if new unread notification arrived
-        if (count > prevUnreadCountRef.current && prevUnreadCountRef.current !== 0 && soundEnabled) {
+        // Only play chime on background polling if new unread notification arrived after initial load
+        if (!isFirstLoadRef.current && prevUnreadCountRef.current >= 0 && count > prevUnreadCountRef.current && soundEnabled) {
           playChime();
         }
-        prevUnreadCountRef.current = count;
 
+        if (isFirstLoadRef.current) {
+          isFirstLoadRef.current = false;
+        }
+
+        prevUnreadCountRef.current = count;
         setNotifications(list);
         setUnreadCount(count);
       }
@@ -122,12 +127,12 @@ export function NotificationsPopover() {
     }
   }, [soundEnabled]);
 
-  // Initial fetch and auto-polling every 15 seconds
+  // Initial fetch and auto-polling every 20 seconds
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(() => {
       fetchNotifications();
-    }, 15000);
+    }, 20000);
 
     return () => clearInterval(interval);
   }, [fetchNotifications]);

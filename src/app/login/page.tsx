@@ -27,8 +27,8 @@ function LoginForm() {
   const inviteToken = searchParams.get('invite');
 
   // Standard Login State
-  const [email, setEmail] = useState('asad@asadlandholdings.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -368,18 +368,6 @@ function LoginForm() {
         </Button>
       </form>
 
-      {/* Default Admin Quick Credentials Reminder */}
-      <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-        <div className="font-bold text-slate-300 flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Super Admin Access:
-        </div>
-        <div>
-          Email: <span className="font-mono text-emerald-400">asad@asadlandholdings.com</span>
-        </div>
-        <div>
-          Password: <span className="font-mono text-emerald-400">password123</span>
-        </div>
-      </div>
     </Card>
   );
 }

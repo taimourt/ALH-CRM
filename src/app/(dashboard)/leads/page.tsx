@@ -41,6 +41,13 @@ import {
   BadgePercent,
   Download,
   FileSpreadsheet,
+  Archive,
+  RotateCcw,
+  Sparkles,
+  Banknote,
+  Home,
+  PhoneOff,
+  Filter,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,10 +56,11 @@ import { Input, Select } from '@/components/ui/input';
 import { SideDrawer } from '@/components/ui/side-drawer';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
-import { formatPKR, formatDate } from '@/lib/utils';
+import { formatPKR, formatDate, formatDateTime, formatRelativeTime } from '@/lib/utils';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { useRBAC } from '@/contexts/rbac-context';
 import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
+import { DisqualifyLeadModal, DISQUALIFY_REASONS } from '@/components/leads/disqualify-lead-modal';
 
 const STAGES = [
   { id: 'NEW', label: 'New Inquiries', color: 'bg-blue-500', border: 'border-blue-500/40', bgLight: 'bg-blue-500/10' },
@@ -69,9 +77,10 @@ function LeadsPageContent() {
   const { user } = useRBAC();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get('tab')?.toUpperCase();
-  const defaultTab = tabParam === 'BUYERS' ? 'BUYERS' : tabParam === 'INVESTORS' ? 'INVESTORS' : 'LEADS';
-  const [activeTab, setActiveTab] = useState<'LEADS' | 'BUYERS' | 'INVESTORS'>(defaultTab);
+  const defaultTab = tabParam === 'BUYERS' ? 'BUYERS' : tabParam === 'INVESTORS' ? 'INVESTORS' : tabParam === 'ARCHIVE' ? 'ARCHIVE' : 'LEADS';
+  const [activeTab, setActiveTab] = useState<'LEADS' | 'BUYERS' | 'INVESTORS' | 'ARCHIVE'>(defaultTab as any);
   const [leads, setLeads] = useState<any[]>([]);
+  const [archivedLeads, setArchivedLeads] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
@@ -79,6 +88,12 @@ function LeadsPageContent() {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Disqualification Modal & Archive States
+  const [disqualifyModalOpen, setDisqualifyModalOpen] = useState(false);
+  const [leadToDisqualify, setLeadToDisqualify] = useState<any | null>(null);
+  const [archiveFilterReason, setArchiveFilterReason] = useState<string>('ALL');
+  const [reactivatingLeadId, setReactivatingLeadId] = useState<string | null>(null);
 
   // Drag and Drop States for Kanban
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
@@ -164,23 +179,58 @@ function LeadsPageContent() {
 
   async function fetchAllContactsData() {
     try {
-      const [leadsRes, custRes, usersRes, slaRes] = await Promise.all([
+      const [leadsRes, custRes, usersRes, slaRes, archiveRes] = await Promise.all([
         fetch('/api/leads'),
         fetch('/api/customers'),
         fetch('/api/users'),
         fetch('/api/automation/sla-check'),
+        fetch('/api/leads?archived=true'),
       ]);
 
       if (leadsRes.ok) setLeads(await leadsRes.json());
       if (custRes.ok) setCustomers(await custRes.json());
       if (usersRes.ok) setAgents(await usersRes.json());
       if (slaRes.ok) setSlaStats(await slaRes.json());
+      if (archiveRes.ok) setArchivedLeads(await archiveRes.json());
     } catch (err) {
       console.error('Fetch contacts error:', err);
     } finally {
       setLoading(false);
     }
   }
+
+  const handleDisqualifySuccess = (leadId: string, updatedLead: any) => {
+    setLeads((prev) => prev.filter((l) => l.id !== leadId));
+    setArchivedLeads((prev) => [updatedLead, ...prev.filter((l) => l.id !== leadId)]);
+    if (selectedLead?.id === leadId) {
+      setSelectedLead(null);
+    }
+  };
+
+  const handleReactivateLead = async (lead: any) => {
+    setReactivatingLeadId(lead.id);
+    try {
+      const res = await fetch(`/api/leads/disqualify?leadId=${lead.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast(
+          'Lead Restored to Pipeline',
+          `"${lead.name}" restored to active pipeline (Stage: NEW).`,
+          'success'
+        );
+        setArchivedLeads((prev) => prev.filter((l) => l.id !== lead.id));
+        setLeads((prev) => [data.lead, ...prev]);
+      } else {
+        toast('Reactivation Failed', data.error || 'Failed to restore lead.', 'error');
+      }
+    } catch (err: any) {
+      toast('Error', 'Network error reactivating lead.', 'error');
+    } finally {
+      setReactivatingLeadId(null);
+    }
+  };
 
   useEffect(() => {
     fetchAllContactsData();
@@ -570,6 +620,22 @@ function LeadsPageContent() {
               {societyInvestors.length} HNWI
             </Badge>
           </button>
+
+          {/* Tab 4: Cold & Disqualified Archive */}
+          <button
+            onClick={() => setActiveTab('ARCHIVE')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+              activeTab === 'ARCHIVE'
+                ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            <Archive className="w-4 h-4" />
+            <span>❄️ Cold &amp; Disqualified Archive</span>
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+              {archivedLeads.length} Archived
+            </Badge>
+          </button>
         </div>
 
         {/* Search Bar & View Toggles */}
@@ -581,6 +647,8 @@ function LeadsPageContent() {
               placeholder={
                 activeTab === 'LEADS'
                   ? 'Search leads, phone, society...'
+                  : activeTab === 'ARCHIVE'
+                  ? 'Search archived client, phone...'
                   : 'Search buyer name, CNIC, address...'
               }
               value={search}
@@ -832,16 +900,29 @@ function LeadsPageContent() {
                             href={`https://wa.me/92${lead.phone?.replace(/^0/, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors"
+                            title="Open WhatsApp"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
                           </a>
                           <a
                             href={`tel:${lead.phone}`}
-                            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white"
+                            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-colors"
+                            title="Call Client"
                           >
                             <Phone className="w-3.5 h-3.5" />
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLeadToDisqualify(lead);
+                              setDisqualifyModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                            title="Disqualify / Move to Cold Archive"
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1033,7 +1114,7 @@ function LeadsPageContent() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] text-slate-400">Manager: {inv.assignedAgent?.name || 'Hamza Malik'}</span>
+                  <span className="text-[11px] text-slate-400">Manager: {inv.assignedAgent?.name || 'Unassigned'}</span>
                   <div className="flex items-center gap-2">
                     <a
                       href={`https://wa.me/92${inv.phone?.replace(/^0/, '')}`}
@@ -1048,6 +1129,336 @@ function LeadsPageContent() {
               </Card>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ❄️ TAB 4: DISQUALIFIED & COLD LEADS ARCHIVE (NURTURE POOLS) */}
+      {/* ========================================================================= */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-5 animate-in fade-in duration-200">
+          {/* Executive Header Banner */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-rose-950 text-white border border-rose-900/40 shadow-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  <Archive className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm tracking-tight text-slate-100">
+                    Disqualified &amp; Cold Leads Archive Pool
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Unassigned from active sales agent pipelines. Categorized into automated nurture broadcasts, secondary housing files, and ad exclusion lists.
+                  </p>
+                </div>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono border-rose-800 text-rose-300">
+                {archivedLeads.length} Archived Leads
+              </Badge>
+            </div>
+          </div>
+
+          {/* 5 Categorical Nurture Breakdown Metric Pods */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {/* 1. Budget Mismatch */}
+            <div
+              onClick={() => setArchiveFilterReason(archiveFilterReason === 'BUDGET_MISMATCH' ? 'ALL' : 'BUDGET_MISMATCH')}
+              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                archiveFilterReason === 'BUDGET_MISMATCH'
+                  ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                  💰 Budget &lt; 50L
+                </span>
+                <Banknote className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1 font-mono">
+                {archivedLeads.filter((l) => l.disqualifiedReason === 'BUDGET_MISMATCH').length}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                Affordable Projects Pool
+              </p>
+            </div>
+
+            {/* 2. Cold / Browsing */}
+            <div
+              onClick={() => setArchiveFilterReason(archiveFilterReason === 'NOT_INTERESTED_COLD' ? 'ALL' : 'NOT_INTERESTED_COLD')}
+              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                archiveFilterReason === 'NOT_INTERESTED_COLD'
+                  ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  ❄️ Cold / Long-Term
+                </span>
+                <Clock className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1 font-mono">
+                {archivedLeads.filter((l) => l.disqualifiedReason === 'NOT_INTERESTED_COLD').length}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                90-Day Drip &amp; Re-ping
+              </p>
+            </div>
+
+            {/* 3. Looking for Rent */}
+            <div
+              onClick={() => setArchiveFilterReason(archiveFilterReason === 'LOOKING_FOR_RENT' ? 'ALL' : 'LOOKING_FOR_RENT')}
+              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                archiveFilterReason === 'LOOKING_FOR_RENT'
+                  ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                  🏠 Rental Inquiries
+                </span>
+                <Home className="w-4 h-4 text-purple-500" />
+              </div>
+              <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1 font-mono">
+                {archivedLeads.filter((l) => l.disqualifiedReason === 'LOOKING_FOR_RENT').length}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                Rental Partner Desk
+              </p>
+            </div>
+
+            {/* 4. Wrong Number / Spam */}
+            <div
+              onClick={() => setArchiveFilterReason(archiveFilterReason === 'WRONG_NUMBER_SPAM' ? 'ALL' : 'WRONG_NUMBER_SPAM')}
+              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                archiveFilterReason === 'WRONG_NUMBER_SPAM'
+                  ? 'border-rose-500 bg-rose-500/10 ring-2 ring-rose-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  🚫 Invalid / Spam
+                </span>
+                <PhoneOff className="w-4 h-4 text-rose-500" />
+              </div>
+              <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1 font-mono">
+                {archivedLeads.filter((l) => l.disqualifiedReason === 'WRONG_NUMBER_SPAM').length}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                Ad Exclusion Audience
+              </p>
+            </div>
+
+            {/* 5. Competitor / Broker */}
+            <div
+              onClick={() => setArchiveFilterReason(archiveFilterReason === 'COMPETITOR_AGENT' ? 'ALL' : 'COMPETITOR_AGENT')}
+              className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                archiveFilterReason === 'COMPETITOR_AGENT'
+                  ? 'border-indigo-500 bg-indigo-500/10 ring-2 ring-indigo-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                  🤝 Broker Network
+                </span>
+                <Users className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div className="text-lg font-black text-slate-900 dark:text-slate-100 mt-1 font-mono">
+                {archivedLeads.filter((l) => l.disqualifiedReason === 'COMPETITOR_AGENT').length}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                B2B Co-Broking
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Pills Bar */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1 shrink-0 mr-1">
+                <Filter className="w-3.5 h-3.5" /> Filter Pool:
+              </span>
+              <button
+                onClick={() => setArchiveFilterReason('ALL')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                  archiveFilterReason === 'ALL'
+                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                All Archived ({archivedLeads.length})
+              </button>
+              {DISQUALIFY_REASONS.map((r) => {
+                const count = archivedLeads.filter((l) => l.disqualifiedReason === r.id).length;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => setArchiveFilterReason(r.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 ${
+                      archiveFilterReason === r.id
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>{r.label}</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 dark:bg-white/20 font-mono">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Archived Leads Table */}
+          <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-sm">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="p-3.5">Lead Name &amp; Phone</th>
+                  <th className="p-3.5">Disqualification Reason</th>
+                  <th className="p-3.5">Automated Nurture Bucket</th>
+                  <th className="p-3.5">Archived Date</th>
+                  <th className="p-3.5">Agent Notes</th>
+                  <th className="p-3.5 text-right">Reactivation &amp; Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {(() => {
+                  const filteredArchived = archivedLeads.filter((l) => {
+                    const matchesSearch =
+                      !search ||
+                      l.name?.toLowerCase().includes(search.toLowerCase()) ||
+                      l.phone?.includes(search) ||
+                      l.preferredSociety?.toLowerCase().includes(search.toLowerCase());
+                    const matchesReason =
+                      archiveFilterReason === 'ALL' || l.disqualifiedReason === archiveFilterReason;
+                    return matchesSearch && matchesReason;
+                  });
+
+                  if (filteredArchived.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={6} className="p-12 text-center space-y-2">
+                          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                            <Archive className="w-6 h-6" />
+                          </div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                            No Archived Leads Found
+                          </div>
+                          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                            {search || archiveFilterReason !== 'ALL'
+                              ? 'No archived leads match your current filter criteria.'
+                              : 'All incoming leads are currently active in your sales pipeline.'}
+                          </p>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredArchived.map((lead) => {
+                    const reasonObj = DISQUALIFY_REASONS.find((r) => r.id === lead.disqualifiedReason) || {
+                      label: lead.disqualifiedReason?.replace(/_/g, ' ') || 'Archived',
+                      color: 'text-slate-500 bg-slate-500/10 border-slate-500/30',
+                      nurtureLabel: lead.nurtureBucket?.replace(/_/g, ' ') || 'General Archive',
+                    };
+
+                    return (
+                      <tr key={lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                        <td className="p-3.5">
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{lead.name}</div>
+                          <div className="font-mono text-[11px] text-emerald-600 font-semibold">{lead.phone}</div>
+                          <div className="text-[10px] text-slate-400">{lead.preferredSociety || 'Kohistan Enclave'}</div>
+                        </td>
+
+                        <td className="p-3.5">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border ${reasonObj.color}`}>
+                            {reasonObj.label}
+                          </span>
+                        </td>
+
+                        <td className="p-3.5">
+                          <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>{reasonObj.nurtureLabel}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400">
+                            {lead.nurtureBucket === 'AFFORDABLE_PROJECTS'
+                              ? 'Installment Project Broadcasts'
+                              : lead.nurtureBucket === 'JUNK_EXCLUSION'
+                              ? 'Excluded from Ad Spend'
+                              : lead.nurtureBucket === 'RENTAL_PARTNER'
+                              ? 'Affiliate Broker Split'
+                              : 'Low-touch automated queue'}
+                          </span>
+                        </td>
+
+                        <td className="p-3.5 text-slate-500 font-mono text-[11px]">
+                          {lead.disqualifiedAt ? (
+                            <div>
+                              <span className="text-slate-800 dark:text-slate-200 font-semibold">
+                                {formatRelativeTime(lead.disqualifiedAt)}
+                              </span>
+                              <div className="text-[10px] text-slate-400">{formatDate(lead.disqualifiedAt)}</div>
+                            </div>
+                          ) : (
+                            formatDate(lead.updatedAt)
+                          )}
+                        </td>
+
+                        <td className="p-3.5 text-slate-600 dark:text-slate-300 max-w-xs truncate text-[11px]">
+                          {lead.disqualifiedNotes ? (
+                            <span title={lead.disqualifiedNotes}>“{lead.disqualifiedNotes}”</span>
+                          ) : (
+                            <span className="text-slate-400 italic">No notes</span>
+                          )}
+                        </td>
+
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReactivateLead(lead)}
+                              isLoading={reactivatingLeadId === lead.id}
+                              className="text-xs h-7 gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                              title="Restore lead back to active sales pipeline"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              Reactivate
+                            </Button>
+
+                            <a
+                              href={`https://wa.me/92${lead.phone?.replace(/^0/, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors"
+                              title="WhatsApp Client"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </a>
+
+                            <a
+                              href={`tel:${lead.phone}`}
+                              className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-colors"
+                              title="Call Client"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </Card>
         </div>
       )}
 
@@ -1121,6 +1532,22 @@ function LeadsPageContent() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Disqualify / Archive Action */}
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLeadToDisqualify(selectedLead);
+                  setDisqualifyModalOpen(true);
+                }}
+                className="w-full text-xs text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                Disqualify / Move to Cold Archive
+              </Button>
             </div>
 
             {/* Manual Assignment Section (Admin / Manager) */}
@@ -1366,6 +1793,17 @@ function LeadsPageContent() {
           </div>
         </form>
       </Modal>
+
+      {/* Disqualify Lead Modal */}
+      <DisqualifyLeadModal
+        isOpen={disqualifyModalOpen}
+        onClose={() => {
+          setDisqualifyModalOpen(false);
+          setLeadToDisqualify(null);
+        }}
+        lead={leadToDisqualify}
+        onDisqualified={handleDisqualifySuccess}
+      />
     </div>
   );
 }

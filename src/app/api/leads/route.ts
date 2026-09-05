@@ -8,6 +8,9 @@ import { triggerWorkflow } from '@/lib/automation';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const stage = searchParams.get('stage');
+  const archived = searchParams.get('archived');
+  const nurtureBucket = searchParams.get('nurtureBucket');
+  const reason = searchParams.get('reason');
 
   try {
     const user = await getCurrentUser();
@@ -15,11 +18,19 @@ export async function GET(request: Request) {
 
     const whereConditions: any = {
       ...(stage ? { stage: stage as any } : {}),
+      ...(archived === 'true'
+        ? { isArchived: true }
+        : archived === 'all'
+        ? {}
+        : { isArchived: false, NOT: { stage: 'DISQUALIFIED' } }),
+      ...(nurtureBucket && nurtureBucket !== 'ALL' ? { nurtureBucket } : {}),
+      ...(reason && reason !== 'ALL' ? { disqualifiedReason: reason } : {}),
       ...(isAgentOnly && user
         ? {
             OR: [
               { assignedAgentId: user.id },
               { deals: { some: { agentId: user.id } } },
+              ...(archived === 'true' ? [{ disqualifiedById: user.id }] : []),
             ],
           }
         : {}),

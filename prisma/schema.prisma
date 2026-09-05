@@ -187,10 +187,16 @@ model Lead {
   assignedAgent    User?       @relation("AgentLeads", fields: [assignedAgentId], references: [id])
   assignedAt       DateTime?   @default(now())
   lastContactedAt  DateTime?
-  slaStatus        String?     @default("ON_TRACK") // ON_TRACK, WARNING, BREACHED_24H, REASSIGNED
-  previousAgentId  String?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  slaStatus          String?     @default("ON_TRACK") // ON_TRACK, WARNING, BREACHED_24H, REASSIGNED
+  previousAgentId    String?
+  disqualifiedReason String?     // BUDGET_MISMATCH, NOT_INTERESTED_COLD, WRONG_NUMBER_SPAM, LOOKING_FOR_RENT, COMPETITOR_AGENT, OTHER
+  disqualifiedNotes  String?
+  disqualifiedAt     DateTime?
+  disqualifiedById   String?
+  nurtureBucket      String?     // AFFORDABLE_PROJECTS, LONG_TERM_90D, RENTAL_PARTNER, JUNK_EXCLUSION, BROKER_NETWORK, GENERAL_ARCHIVE
+  isArchived         Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   customers        Customer[]
   deals            Deal[]

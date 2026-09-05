@@ -37,3 +37,4 @@ node-v*
 prisma/dev.db
 git-push.js
 github-upload.js
+.env*

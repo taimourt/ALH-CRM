@@ -24,7 +24,7 @@ import { Input, Select } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { InvitationModal } from '@/components/invitation-modal';
 import { useToast } from '@/components/ui/toast';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime, formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
 import { useRBAC } from '@/contexts/rbac-context';
 
@@ -351,8 +351,27 @@ export default function UsersPage() {
                   <td className="p-3.5">
                     <Badge variant={statusVariants[u.status] || 'success'}>{u.status}</Badge>
                   </td>
-                  <td className="p-3.5 text-slate-500 font-mono text-[11px]">
-                    {u.lastLoginAt ? formatDate(u.lastLoginAt) : 'Never'}
+                  <td className="p-3.5 font-mono text-[11px]">
+                    {u.lastLoginAt ? (
+                      <div className="flex flex-col" title={`Exact: ${formatDateTime(u.lastLoginAt)}`}>
+                        <span className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 font-sans">
+                          {Date.now() - new Date(u.lastLoginAt).getTime() < 10 * 60 * 1000 && (
+                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Active now" />
+                          )}
+                          {formatRelativeTime(u.lastLoginAt)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-sans">
+                          {formatDateTime(u.lastLoginAt)}
+                        </span>
+                      </div>
+                    ) : u.status === 'INVITED' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-sans font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        Pending Invite
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-sans text-xs">Never</span>
+                    )}
                   </td>
                   <td className="p-3.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">

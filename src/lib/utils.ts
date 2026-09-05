@@ -71,3 +71,40 @@ export function formatTime(date: string | Date | null | undefined): string {
     hour12: true,
   });
 }
+
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return "Never";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "Never";
+  const dateStr = d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const timeStr = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${dateStr}, ${timeStr}`;
+}
+
+export function formatRelativeTime(date: string | Date | null | undefined): string {
+  if (!date) return "Never";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "Never";
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSec < 45) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return `Yesterday at ${formatTime(date)}`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return formatDateTime(date);
+}

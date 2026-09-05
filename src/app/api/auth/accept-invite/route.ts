@@ -83,6 +83,7 @@ export async function POST(request: Request) {
         status: 'ACTIVE',
         invitationToken: null,
         invitationExpiresAt: null,
+        lastLoginAt: new Date(),
       },
     });
 

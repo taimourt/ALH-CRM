@@ -21,7 +21,7 @@ import { Select, Input } from '@/components/ui/input';
 import { Tabs } from '@/components/ui/tabs';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
-import { formatPKR, formatDate } from '@/lib/utils';
+import { formatPKR, formatDate, formatDateTime, formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function UserProfilePage({ params }: { params: { id: string } }) {
@@ -265,7 +265,9 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
 
           <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border space-y-1">
             <div className="font-bold text-slate-900 dark:text-slate-100">Antigravity Browser / macOS</div>
-            <div className="text-slate-500 font-mono text-[11px]">IP: 127.0.0.1 • Last Active: {formatDate(user.lastLoginAt || new Date())}</div>
+            <div className="text-slate-500 font-mono text-[11px]">
+              IP: 127.0.0.1 • Last Active: {user.lastLoginAt ? `${formatRelativeTime(user.lastLoginAt)} (${formatDateTime(user.lastLoginAt)})` : 'Never'}
+            </div>
           </div>
         </Card>
       )}

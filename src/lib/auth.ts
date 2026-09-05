@@ -37,6 +37,14 @@ export async function createSession(userId: string, userAgent?: string, ipAddres
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
+  // Automatically update lastLoginAt on the user whenever a new session is issued
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lastLoginAt: new Date() },
+  }).catch((err) => {
+    console.error('Failed to update user lastLoginAt:', err);
+  });
+
   const session = await prisma.userSession.create({
     data: {
       userId,
@@ -57,6 +65,7 @@ export async function createSession(userId: string, userAgent?: string, ipAddres
           status: true,
           avatar: true,
           jobTitle: true,
+          lastLoginAt: true,
         },
       },
     },
@@ -103,6 +112,7 @@ export async function getSessionUser(token?: string) {
             status: true,
             avatar: true,
             jobTitle: true,
+            lastLoginAt: true,
           },
         },
       },
@@ -111,6 +121,15 @@ export async function getSessionUser(token?: string) {
     if (!session) return null;
     if (new Date() > session.expiresAt) return null;
     if (session.user.status !== 'ACTIVE') return null;
+
+    // Refresh lastLoginAt if null or older than 15 minutes to keep active user sessions current
+    const lastLogin = session.user.lastLoginAt ? new Date(session.user.lastLoginAt).getTime() : 0;
+    if (!lastLogin || Date.now() - lastLogin > 15 * 60 * 1000) {
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { lastLoginAt: new Date() },
+      }).catch(() => {});
+    }
 
     const permissions = await getRolePermissionsFromDB(session.user.role);
 

@@ -364,19 +364,11 @@ export default function DashboardPage() {
     })
     .sort((a, b) => b.count - a.count);
 
-  const displayLeadSources =
-    leadSourcePerformance.some((s) => s.count > 0)
-      ? leadSourcePerformance
-      : [
-          { ...leadSourcePerformance[0], count: 8, percentage: 40, closed: 2, conversionRate: 25, salesVolume: 35000000 },
-          { ...leadSourcePerformance[1], count: 5, percentage: 25, closed: 1, conversionRate: 20, salesVolume: 20000000 },
-          { ...leadSourcePerformance[2], count: 4, percentage: 20, closed: 1, conversionRate: 25, salesVolume: 18000000 },
-          { ...leadSourcePerformance[3], count: 3, percentage: 15, closed: 1, conversionRate: 33, salesVolume: 15000000 },
-        ];
+  const displayLeadSources = leadSourcePerformance;
 
   const topChannel = displayLeadSources.reduce(
-    (best, cur) => (cur.conversionRate > best.conversionRate && cur.count > 0 ? cur : best),
-    displayLeadSources[0]
+    (best, cur) => (cur.conversionRate > (best?.conversionRate || 0) && cur.count > 0 ? cur : best),
+    displayLeadSources[0] || null
   );
 
   // =========================================================================
@@ -405,7 +397,7 @@ export default function DashboardPage() {
       const closedDeals = agentDeals.length + agentLeadsClosed.length;
       const salesVolume =
         agentDeals.reduce((sum, d) => sum + (d.amount || 0), 0) +
-        agentLeadsClosed.reduce((sum, l) => sum + (l.budgetMax || 15000000), 0);
+        agentLeadsClosed.reduce((sum, l) => sum + (l.budgetMax || 0), 0);
       const commission = Math.round(salesVolume * 0.01 * 0.6);
       const conversionRate =
         agentAssignedLeads.length > 0 ? Math.round((closedDeals / agentAssignedLeads.length) * 100) : 0;
@@ -427,18 +419,9 @@ export default function DashboardPage() {
     })
     .sort((a, b) => b.rawSales - a.rawSales || b.deals - a.deals);
 
-  const displayAgentLeaderboard =
-    agentLeaderboard.length > 0
-      ? agentLeaderboard
-      : [
-          { id: '1', name: 'Hamza Malik', role: 'Senior Agent', email: 'hamza@asad.com', phone: '03001234567', assignedCount: 4, untouchedCount: 0, deals: 3, sales: 'PKR 4.6 Crore', commission: 'PKR 690,000', rawSales: 46000000, conversionRate: 35 },
-          { id: '2', name: 'Taimour Shah', role: 'Sales Specialist', email: 'taimour@asad.com', phone: '03007654321', assignedCount: 3, untouchedCount: 1, deals: 2, sales: 'PKR 3.2 Crore', commission: 'PKR 480,000', rawSales: 32000000, conversionRate: 28 },
-          { id: '3', name: 'Ayesha Malik', role: 'Sales Agent', email: 'ayesha@asad.com', phone: '03009988776', assignedCount: 3, untouchedCount: 0, deals: 2, sales: 'PKR 2.8 Crore', commission: 'PKR 420,000', rawSales: 28000000, conversionRate: 25 },
-          { id: '4', name: 'Bilal Ahmed', role: 'Sales Agent', email: 'bilal@asad.com', phone: '03015544332', assignedCount: 2, untouchedCount: 0, deals: 1, sales: 'PKR 1.5 Crore', commission: 'PKR 225,000', rawSales: 15000000, conversionRate: 20 },
-          { id: '5', name: 'Usman Chaudhry', role: 'Sales Agent', email: 'usman@asad.com', phone: '03227788990', assignedCount: 2, untouchedCount: 0, deals: 1, sales: 'PKR 1.2 Crore', commission: 'PKR 180,000', rawSales: 12000000, conversionRate: 18 },
-        ];
+  const displayAgentLeaderboard = agentLeaderboard;
 
-  const topAgent = displayAgentLeaderboard[0];
+  const topAgent = displayAgentLeaderboard[0] || null;
   const totalTeamVolume = displayAgentLeaderboard.reduce((sum, a) => sum + (a.rawSales || 0), 0);
 
   // =========================================================================

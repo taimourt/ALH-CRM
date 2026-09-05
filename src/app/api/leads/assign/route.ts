@@ -22,21 +22,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { leadId, agentId, reason } = body;
 
-    if (!leadId || !agentId) {
-      return NextResponse.json({ error: 'leadId and agentId are required' }, { status: 400 });
+    if (!leadId) {
+      return NextResponse.json({ error: 'leadId is required' }, { status: 400 });
     }
 
     const updatedLead = await reassignLeadManually({
       leadId,
-      newAgentId: agentId,
+      newAgentId: agentId || 'UNASSIGNED',
       actorId: user.id,
       actorName: user.name,
       reason: reason || 'Manual Manager Assignment',
     });
 
+    const isUnassigned = !updatedLead.assignedAgentId;
     return NextResponse.json({
       success: true,
-      message: `Lead successfully assigned to ${updatedLead.assignedAgent?.name}.`,
+      message: isUnassigned
+        ? 'Lead successfully moved to Unassigned Pool.'
+        : `Lead successfully assigned to ${updatedLead.assignedAgent?.name}.`,
       lead: updatedLead,
     });
   } catch (error: any) {

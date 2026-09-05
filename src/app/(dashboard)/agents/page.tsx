@@ -31,6 +31,7 @@ import { SideDrawer } from '@/components/ui/side-drawer';
 import { formatPKR, formatDate } from '@/lib/utils';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { useRBAC } from '@/contexts/rbac-context';
+import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 
 export default function AgentsPage() {
   const { user } = useRBAC();
@@ -73,10 +74,10 @@ export default function AgentsPage() {
   const agentPerformance = salesAgents.map((agent, index) => {
     const agentDeals = deals.filter((d) => d.agentId === agent.id || d.agent?.id === agent.id);
     const closedWonDeals = agentDeals.filter((d) => d.stage === 'CLOSED_WON');
-    const closedVolume = closedWonDeals.reduce((sum, d) => sum + (d.amount || 0), 0) || (index === 0 ? 38000000 : index === 1 ? 28500000 : index === 2 ? 18000000 : 12500000);
-    const wonCount = closedWonDeals.length || (index === 0 ? 3 : index === 1 ? 2 : 1);
-    const totalDealsCount = agentDeals.length || (wonCount + 2);
-    const winRate = Math.round((wonCount / (totalDealsCount || 1)) * 100);
+    const closedVolume = closedWonDeals.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const wonCount = closedWonDeals.length;
+    const totalDealsCount = agentDeals.length;
+    const winRate = totalDealsCount > 0 ? Math.round((wonCount / totalDealsCount) * 100) : 0;
 
     const agentLeads = leads.filter((l) => l.assignedAgentId === agent.id || l.assignedAgent?.id === agent.id);
     const staleLeads = agentLeads.filter((l) => {
@@ -95,12 +96,12 @@ export default function AgentsPage() {
       wonCount,
       totalDealsCount,
       winRate,
-      assignedLeadsCount: agentLeads.length || (5 + index * 2),
+      assignedLeadsCount: agentLeads.length,
       staleLeadsCount: staleLeads.length,
       quotaTarget,
       quotaPct,
       commissionEarned,
-      territory: index === 0 ? 'Kohistan Enclave' : index === 1 ? 'New City Paradise' : index === 2 ? 'DHA Phase 2' : 'Bahria Town',
+      territory: index === 0 ? 'Kohistan Enclave' : 'New City Paradise',
     };
   }).sort((a, b) => b.closedVolume - a.closedVolume);
 
@@ -134,7 +135,8 @@ export default function AgentsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <RoundRobinToggle compact />
             <Link href="/settings/users">
               <Button variant="outline" size="sm" className="gap-1.5 text-xs text-slate-700 dark:text-slate-200">
                 <UserCheck className="w-3.5 h-3.5 text-brand-600" /> User Accounts & Invites →
@@ -166,10 +168,10 @@ export default function AgentsPage() {
           <Card className="p-4 border-l-4 border-l-amber-500 bg-amber-50/10">
             <span className="text-[11px] font-bold uppercase text-slate-500">🏆 Top Producing Agent</span>
             <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-0.5">
-              {topProducer?.name || 'Hamza Malik'}
+              {topProducer?.closedVolume > 0 ? topProducer?.name : 'Saif Ur Rehman'}
             </h3>
             <p className="text-[11px] text-amber-600 font-bold mt-1">
-              {formatPKR(topProducer?.closedVolume || 38000000)} Closed Volume
+              {formatPKR(topProducer?.closedVolume || 0)} Closed Volume
             </p>
           </Card>
 

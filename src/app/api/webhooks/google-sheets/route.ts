@@ -41,7 +41,8 @@ export async function POST(request: Request) {
           preferredSize,
           budgetMax,
           notes,
-          assignedAt: new Date(),
+          assignedAgentId: null,
+          assignedAt: null,
           slaStatus: 'ON_TRACK',
         },
       });

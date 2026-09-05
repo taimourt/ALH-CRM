@@ -306,7 +306,8 @@ export async function syncGoogleSheetsLeads(sheetUrlOrId?: string) {
         preferredSize: item.preferredSize || '10 MARLA',
         budgetMax: item.budgetMax || 18500000,
         notes: item.notes || 'Imported via Google Sheets Integration',
-        assignedAt: new Date(),
+        assignedAgentId: null,
+        assignedAt: null,
         slaStatus: 'ON_TRACK',
       },
     });

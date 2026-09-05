@@ -52,6 +52,7 @@ import { useToast } from '@/components/ui/toast';
 import { formatPKR, formatDate } from '@/lib/utils';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { useRBAC } from '@/contexts/rbac-context';
+import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 
 const STAGES = [
   { id: 'NEW', label: 'New Inquiries', color: 'bg-blue-500', border: 'border-blue-500/40', bgLight: 'bg-blue-500/10' },
@@ -87,6 +88,7 @@ function LeadsPageContent() {
   const [slaModalOpen, setSlaModalOpen] = useState(false);
   const [slaStats, setSlaStats] = useState<any>(null);
   const [runningSlaCheck, setRunningSlaCheck] = useState(false);
+  const [roundRobinActive, setRoundRobinActive] = useState<boolean>(true);
 
   // Create Lead Modal
   const [createLeadModalOpen, setCreateLeadModalOpen] = useState(false);
@@ -215,10 +217,7 @@ function LeadsPageContent() {
   };
 
   const handleManualReassign = async () => {
-    if (!selectedLead || !targetAgentId) {
-      toast('Selection Required', 'Please select a sales agent to assign this lead.', 'warning');
-      return;
-    }
+    if (!selectedLead) return;
 
     setReassigning(true);
     try {
@@ -227,14 +226,14 @@ function LeadsPageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: selectedLead.id,
-          agentId: targetAgentId,
+          agentId: targetAgentId || 'UNASSIGNED',
           reason: reassignReason,
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        toast('Lead Assigned Successfully', data.message || 'Assigned to sales agent and email dispatched.', 'success');
+        toast('Assignment Updated', data.message || 'Lead assigned and alert dispatched.', 'success');
         setSelectedLead(data.lead);
         fetchAllContactsData();
       } else {
@@ -244,6 +243,30 @@ function LeadsPageContent() {
       toast('Error', 'Network error assigning lead.', 'error');
     } finally {
       setReassigning(false);
+    }
+  };
+
+  const handleQuickAssign = async (leadId: string, agentId: string) => {
+    try {
+      const res = await fetch('/api/leads/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId,
+          agentId: agentId || 'UNASSIGNED',
+          reason: 'Quick Management Assignment',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast('Lead Assigned', data.message || 'Agent assigned successfully.', 'success');
+        fetchAllContactsData();
+      } else {
+        toast('Assignment Failed', data.error || 'Could not assign agent.', 'error');
+      }
+    } catch (err) {
+      toast('Network Error', 'Failed to assign agent.', 'error');
     }
   };
 
@@ -443,6 +466,13 @@ function LeadsPageContent() {
 
         {/* Global Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
+          {canAssignLeads && (
+            <RoundRobinToggle
+              compact
+              onStatusChange={(active) => setRoundRobinActive(active)}
+            />
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -683,9 +713,15 @@ function LeadsPageContent() {
 
                               {/* Footer: Agent & Stale Alarm */}
                               <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                                <span className="text-slate-500 font-medium truncate max-w-[120px]">
-                                  👤 {lead.assignedAgent?.name || 'Unassigned'}
-                                </span>
+                                {lead.assignedAgent ? (
+                                  <span className="text-slate-600 dark:text-slate-300 font-semibold truncate max-w-[130px] flex items-center gap-1">
+                                    👤 {lead.assignedAgent.name}
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 rounded-md font-bold text-[10px] bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-700/60 flex items-center gap-1">
+                                    📥 Unassigned Pool
+                                  </span>
+                                )}
 
                                 {isStale ? (
                                   <span className="text-rose-600 font-bold font-mono">
@@ -693,7 +729,7 @@ function LeadsPageContent() {
                                   </span>
                                 ) : (
                                   <span className="text-slate-400 font-mono">
-                                    {lead.source || 'WhatsApp'}
+                                    {lead.source || 'Inbound'}
                                   </span>
                                 )}
                               </div>
@@ -742,7 +778,54 @@ function LeadsPageContent() {
                       <td className="p-3.5">
                         <Badge variant="purple">{lead.stage}</Badge>
                       </td>
-                      <td className="p-3.5 text-slate-500">{lead.assignedAgent?.name || 'Round-Robin Pool'}</td>
+                      <td className="p-3.5" onClick={(e) => e.stopPropagation()}>
+                        {lead.assignedAgent ? (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                              👤 {lead.assignedAgent.name}
+                            </span>
+                            {canAssignLeads && (
+                              <select
+                                value={lead.assignedAgentId || ''}
+                                onChange={(e) => handleQuickAssign(lead.id, e.target.value)}
+                                className="text-[10px] py-0.5 px-1 bg-transparent border border-slate-200 dark:border-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
+                                title="Change assigned agent"
+                              >
+                                <option value="UNASSIGNED">📥 Unassign (Move to Pool)</option>
+                                {agents.map((a) => (
+                                  <option key={a.id} value={a.id}>
+                                    {a.name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400">
+                              📥 Unassigned Pool
+                            </span>
+                            {canAssignLeads && (
+                              <select
+                                defaultValue=""
+                                onChange={(e) => {
+                                  if (e.target.value) handleQuickAssign(lead.id, e.target.value);
+                                }}
+                                className="text-[10px] py-1 px-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-300 dark:border-brand-700 font-bold text-brand-700 dark:text-brand-300 rounded-lg hover:bg-brand-100 cursor-pointer"
+                              >
+                                <option value="" disabled>
+                                  + Assign Agent
+                                </option>
+                                {agents.map((a) => (
+                                  <option key={a.id} value={a.id}>
+                                    Assign to {a.name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        )}
+                      </td>
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                           <a
@@ -1044,26 +1127,40 @@ function LeadsPageContent() {
             {canAssignLeads && (
               <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
                 <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-brand-600" /> Reassign Sales Agent
+                  <UserCheck className="w-4 h-4 text-brand-600" /> Lead Assignment & Dispatch
                 </h4>
+                <div className="space-y-1">
+                  <label className="text-slate-500 text-[11px]">Current Assignment Status:</label>
+                  <div className="font-bold text-slate-800 dark:text-slate-200">
+                    {selectedLead.assignedAgent ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                        👤 Assigned: {selectedLead.assignedAgent.name} ({selectedLead.assignedAgent.role || 'Agent'})
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                        📥 In Unassigned Pool
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <Select
                   label="Select Target Agent"
                   value={targetAgentId}
                   onChange={(e) => setTargetAgentId(e.target.value)}
                 >
-                  <option value="">Select an agent...</option>
+                  <option value="UNASSIGNED">📥 Move to Unassigned Pool</option>
                   {agents.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.name} ({a.role})
+                      👤 {a.name} ({a.role || 'Sales Agent'})
                     </option>
                   ))}
                 </Select>
                 <Button
                   onClick={handleManualReassign}
-                  disabled={reassigning || !targetAgentId}
+                  disabled={reassigning}
                   className="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs"
                 >
-                  {reassigning ? 'Reassigning...' : 'Confirm Reassignment & Send Alert'}
+                  {reassigning ? 'Updating Assignment...' : 'Confirm Assignment & Dispatch'}
                 </Button>
               </div>
             )}
@@ -1187,12 +1284,37 @@ function LeadsPageContent() {
             value={newLead.budgetMax}
             onChange={(e) => setNewLead({ ...newLead, budgetMax: e.target.value })}
           />
+
+          <Select
+            label="Assign Lead To"
+            value={newLead.assignedAgentId}
+            onChange={(e) => setNewLead({ ...newLead, assignedAgentId: e.target.value })}
+          >
+            <option value="">
+              {roundRobinActive ? '⚡ Auto Round-Robin Dispatch (Default)' : '📥 Unassigned Pool (Default)'}
+            </option>
+            <option value="UNASSIGNED">📥 Explicit Unassigned Pool</option>
+            {agents.map((a) => (
+              <option key={a.id} value={a.id}>
+                👤 {a.name} ({a.role || 'Sales Agent'})
+              </option>
+            ))}
+          </Select>
+
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span className="text-slate-500">System Round-Robin Status:</span>
+            <span className={`font-bold flex items-center gap-1 ${roundRobinActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+              <Zap className="w-3 h-3" />
+              {roundRobinActive ? 'Active (Auto-Assigns Inbound)' : 'Paused (Held in Pool)'}
+            </span>
+          </div>
+
           <div className="flex justify-end gap-2 pt-3">
             <Button type="button" variant="outline" onClick={() => setCreateLeadModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" className="bg-brand-600 hover:bg-brand-500 text-white">
-              Save Lead & Dispatch Round-Robin
+              Save Lead & Process Intake
             </Button>
           </div>
         </form>

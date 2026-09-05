@@ -22,71 +22,110 @@ export async function triggerWorkflow(event: AutomationEvent, payload: Automatio
       const lead = await prisma.lead.findUnique({ where: { id: payload.leadId } });
       if (!lead) return;
 
-      // 1. Auto-assign agent if unassigned
-      let agentId = lead.assignedAgentId;
-      if (!agentId) {
-        const defaultAgent = await prisma.user.findFirst({ where: { role: 'AGENT' } });
-        if (defaultAgent) {
-          agentId = defaultAgent.id;
-          await prisma.lead.update({ where: { id: lead.id }, data: { assignedAgentId: agentId } });
-        }
-      }
+      const agentId = lead.assignedAgentId;
 
-      // 2. Send WhatsApp Greeting Message
-      const greetingText = `Assalam-o-Alaikum ${lead.name}! Thank you for contacting Asad Land Holdings. Our property advisor has received your inquiry for ${lead.preferredSociety || 'plots in Islamabad'} and will contact you shortly.`;
+      // Find system / admin user for fallback foreign key requirement in Communication/Task
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          role: { in: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+          status: 'ACTIVE',
+        },
+      });
+      const effectiveUserId = agentId || adminUser?.id;
+
+      // 1. Send WhatsApp Greeting Message
+      const greetingText = `Assalam-o-Alaikum ${lead.name}! Thank you for contacting Asad Land Holdings. Our property advisor has received your inquiry for ${lead.preferredSociety || 'plots in Islamabad/Rawalpindi'} and will contact you shortly.`;
       const waRes = await sendWhatsAppMessage({ toPhone: lead.phone, messageText: greetingText });
 
-      await prisma.communication.create({
-        data: {
-          type: 'WHATSAPP',
-          channel: 'WHATSAPP',
-          direction: 'OUTBOUND',
-          summary: 'Auto-reply WhatsApp Greeting Message',
-          messageText: greetingText,
-          status: waRes.status,
-          leadId: lead.id,
-          agentId: agentId || 'system',
-        },
-      });
-
-      // 3. Create 24h Follow-up Task
-      const task = await prisma.task.create({
-        data: {
-          title: `Follow up with new lead ${lead.name}`,
-          description: `Call ${lead.name} (${lead.phone}) regarding ${lead.preferredSize || '10 Marla'} in ${lead.preferredSociety || 'DHA Phase 8'}.`,
-          dueDate: new Date(Date.now() + 86400000), // 24h
-          priority: 'HIGH',
-          status: 'PENDING',
-          assignedToId: agentId || 'system',
-          leadId: lead.id,
-        },
-      });
-
-      // 4. Notify Manager
-      const manager = await prisma.user.findFirst({ where: { role: 'MANAGER' } });
-      if (manager) {
-        await prisma.notification.create({
+      if (effectiveUserId) {
+        await prisma.communication.create({
           data: {
-            userId: manager.id,
-            title: 'New Lead Auto-Assigned',
-            message: `New lead "${lead.name}" assigned to agent. Greeting message dispatched.`,
-            type: 'IN_APP',
+            type: 'WHATSAPP',
+            channel: 'WHATSAPP',
+            direction: 'OUTBOUND',
+            summary: 'Auto-reply WhatsApp Greeting Message',
+            messageText: greetingText,
+            status: waRes.status || 'DELIVERED',
+            leadId: lead.id,
+            agentId: effectiveUserId,
           },
-        });
+        }).catch((err) => console.error('Communication log error:', err));
       }
 
-      // 5. Activity Log
-      await prisma.activityLog.create({
-        data: {
-          entityType: 'LEAD',
-          entityId: lead.id,
-          action: 'AUTOMATION_WORKFLOW_EXECUTED',
-          description: `Workflow NEW_LEAD_CREATED executed: Agent assigned, WhatsApp greeting sent, 24h task created.`,
-          userId: agentId,
-        },
-      });
+      if (agentId) {
+        // Lead is ASSIGNED to an agent -> Create 24h Follow-up Task for that agent
+        await prisma.task.create({
+          data: {
+            title: `Follow up with new lead ${lead.name}`,
+            description: `Call ${lead.name} (${lead.phone}) regarding ${lead.preferredSize || '10 Marla'} in ${lead.preferredSociety || 'Kohistan Enclave'}.`,
+            dueDate: new Date(Date.now() + 86400000), // 24h
+            priority: 'HIGH',
+            status: 'PENDING',
+            assignedToId: agentId,
+            leadId: lead.id,
+          },
+        }).catch((err) => console.error('Task create error:', err));
 
-      results.push({ step: 'NEW_LEAD_CREATED', status: 'SUCCESS', leadName: lead.name, waMessageId: waRes.messageId });
+        // Activity Log for assigned lead
+        await prisma.activityLog.create({
+          data: {
+            entityType: 'LEAD',
+            entityId: lead.id,
+            action: 'AUTOMATION_WORKFLOW_EXECUTED',
+            description: `Workflow NEW_LEAD_CREATED executed: Assigned to agent, WhatsApp greeting sent, 24h task created.`,
+            userId: agentId,
+          },
+        }).catch((err) => console.error('Activity log error:', err));
+      } else {
+        // Lead is UNASSIGNED (Round-Robin is Paused) -> Create Manual Assignment Task for Super Admin/Manager
+        if (adminUser) {
+          await prisma.task.create({
+            data: {
+              title: `Manual Lead Assignment Required: ${lead.name}`,
+              description: `Inbound lead from ${lead.source || 'Marketing'} (${lead.phone}) is in the Unassigned Pool. Please assign to a sales agent.`,
+              dueDate: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12h
+              priority: 'HIGH',
+              status: 'PENDING',
+              assignedToId: adminUser.id,
+              leadId: lead.id,
+            },
+          }).catch((err) => console.error('Task create error:', err));
+        }
+
+        // Notify Super Admin and Managers about unassigned lead
+        const managers = await prisma.user.findMany({
+          where: {
+            role: { in: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] },
+            status: 'ACTIVE',
+          },
+        });
+
+        for (const mgr of managers) {
+          await prisma.notification.create({
+            data: {
+              userId: mgr.id,
+              title: '📥 New Unassigned Inbound Lead',
+              message: `Lead "${lead.name}" (${lead.phone}) is waiting in the Unassigned Pool for manual assignment.`,
+              type: 'LEAD',
+              link: '/leads',
+              read: false,
+            },
+          }).catch((err) => console.error('Notification error:', err));
+        }
+
+        // Activity Log for unassigned lead
+        await prisma.activityLog.create({
+          data: {
+            entityType: 'LEAD',
+            entityId: lead.id,
+            action: 'AUTOMATION_WORKFLOW_EXECUTED',
+            description: `Workflow NEW_LEAD_CREATED executed: Lead placed in Unassigned Pool (Round-Robin paused). WhatsApp greeting dispatched.`,
+            userId: adminUser?.id,
+          },
+        }).catch((err) => console.error('Activity log error:', err));
+      }
+
+      results.push({ step: 'NEW_LEAD_CREATED', status: 'SUCCESS', leadName: lead.name, assignedAgentId: agentId || null, waMessageId: waRes.messageId });
     }
 
     if (event === 'SITE_VISIT_COMPLETED' && payload.visitId) {

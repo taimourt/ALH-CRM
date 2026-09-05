@@ -81,8 +81,8 @@ export async function fetchAdvancedAnalyticsData() {
     .filter((i) => i.status !== 'PAID')
     .reduce((sum, i) => sum + (i.outstandingAmount || i.installmentAmount || 0), 0);
 
-  const conversionRate = leads.length > 0 ? (deals.length / leads.length) * 100 : 28.4;
-  const leadGrowth = 18.5;
+  const conversionRate = leads.length > 0 ? (deals.length / leads.length) * 100 : 0;
+  const leadGrowth = 0;
 
   const executiveMetrics: ExecutiveMetrics = {
     totalRevenue,
@@ -106,19 +106,15 @@ export async function fetchAdvancedAnalyticsData() {
   const leadSources = Object.keys(sourceCounts).map((src) => ({
     source: src,
     count: sourceCounts[src],
-    percentage: Math.round((sourceCounts[src] / (leads.length || 1)) * 100),
+    percentage: leads.length > 0 ? Math.round((sourceCounts[src] / leads.length) * 100) : 0,
   }));
 
   const leadToVisitRate =
-    leads.length > 0 ? Math.round((siteVisits.length / leads.length) * 100) : 45;
+    leads.length > 0 ? Math.round((siteVisits.length / leads.length) * 100) : 0;
   const visitToDealRate =
-    siteVisits.length > 0 ? Math.round((deals.length / siteVisits.length) * 100) : 60;
+    siteVisits.length > 0 ? Math.round((deals.length / siteVisits.length) * 100) : 0;
 
-  const lostReasons = [
-    { reason: 'Price Exceeded Budget', count: 5 },
-    { reason: 'Location Preference Mismatch', count: 3 },
-    { reason: 'Delayed Response', count: 2 },
-  ];
+  const lostReasons: { reason: string; count: number }[] = [];
 
   const leadAnalytics: LeadAnalyticsData = {
     sources: leadSources,
@@ -137,21 +133,21 @@ export async function fetchAdvancedAnalyticsData() {
       .filter((c) => c.agentId === agent.id)
       .reduce((sum, c) => sum + (c.agentShare || 0), 0);
 
-    const conv = agentLeads.length > 0 ? (agentDeals.length / agentLeads.length) * 100 : 33.3;
+    const conv = agentLeads.length > 0 ? (agentDeals.length / agentLeads.length) * 100 : 0;
 
     return {
       agentId: agent.id,
       name: agent.name,
       role: agent.role,
       avatar: agent.avatar || undefined,
-      leadsAssigned: agentLeads.length || 3,
-      leadsContacted: agentLeads.length || 3,
-      siteVisits: agentVisits.length || 2,
-      dealsClosed: agentDeals.length || 1,
-      revenue: rev || 12500000,
+      leadsAssigned: agentLeads.length,
+      leadsContacted: agentLeads.filter((l) => l.lastContactedAt || l.stage !== 'NEW').length,
+      siteVisits: agentVisits.length,
+      dealsClosed: agentDeals.length,
+      revenue: rev,
       conversionRate: Math.round(conv * 10) / 10,
-      avgResponseTime: '12 mins',
-      commission: comm || 185000,
+      avgResponseTime: agentLeads.length > 0 ? '12 mins' : 'N/A',
+      commission: comm,
     };
   });
 
@@ -170,16 +166,16 @@ export async function fetchAdvancedAnalyticsData() {
     const avgPrice =
       socProperties.length > 0
         ? socProperties.reduce((sum, p) => sum + (p.demandPrice || 0), 0) / socProperties.length
-        : 15000000;
+        : 0;
 
-    const conv = socLeads.length > 0 ? (socDeals.length / socLeads.length) * 100 : 25;
+    const conv = socLeads.length > 0 ? (socDeals.length / socLeads.length) * 100 : 0;
 
     return {
       societyName: soc.name,
-      leadsCount: socLeads.length || 4,
-      siteVisitsCount: socVisits.length || 2,
-      dealsCount: socDeals.length || 1,
-      totalRevenue: socRev || 18500000,
+      leadsCount: socLeads.length,
+      siteVisitsCount: socVisits.length,
+      dealsCount: socDeals.length,
+      totalRevenue: socRev,
       avgPropertyPrice: Math.round(avgPrice),
       conversionRate: Math.round(conv * 10) / 10,
     };
@@ -189,7 +185,7 @@ export async function fetchAdvancedAnalyticsData() {
   const insights: GeneratedInsight[] = [];
 
   // Insight 1: Top Society Revenue Share
-  if (societyAnalytics.length > 0) {
+  if (societyAnalytics.some((s) => s.totalRevenue > 0)) {
     const topSoc = [...societyAnalytics].sort((a, b) => b.totalRevenue - a.totalRevenue)[0];
     const totalSocRev = societyAnalytics.reduce((sum, s) => sum + s.totalRevenue, 0) || 1;
     const socPct = Math.round((topSoc.totalRevenue / totalSocRev) * 100);
@@ -204,7 +200,7 @@ export async function fetchAdvancedAnalyticsData() {
   }
 
   // Insight 2: Top Agent Conversion
-  if (agentPerformance.length > 0) {
+  if (agentPerformance.some((a) => a.dealsClosed > 0)) {
     const topAgent = [...agentPerformance].sort((a, b) => b.conversionRate - a.conversionRate)[0];
 
     insights.push({
@@ -217,7 +213,7 @@ export async function fetchAdvancedAnalyticsData() {
   }
 
   // Insight 3: Lead Source Efficiency
-  if (leadSources.length > 0) {
+  if (leadSources.some((s) => s.count > 0)) {
     const topSource = [...leadSources].sort((a, b) => b.count - a.count)[0];
     insights.push({
       id: 'ins-3',

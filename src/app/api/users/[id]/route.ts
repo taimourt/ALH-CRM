@@ -78,7 +78,10 @@ export async function PATCH(
       data: {
         ...(body.firstName !== undefined ? { firstName: body.firstName } : {}),
         ...(body.lastName !== undefined ? { lastName: body.lastName } : {}),
-        ...(body.firstName || body.lastName ? { name: `${body.firstName || currentUser.firstName || ''} ${body.lastName || currentUser.lastName || ''}`.trim() } : {}),
+        ...(body.name !== undefined ? { name: body.name } : body.firstName || body.lastName ? { name: `${body.firstName || currentUser.firstName || ''} ${body.lastName || currentUser.lastName || ''}`.trim() } : {}),
+        ...(body.avatar !== undefined ? { avatar: body.avatar } : {}),
+        ...(body.whatsappNumber !== undefined ? { whatsappNumber: body.whatsappNumber } : {}),
+        ...(body.notes !== undefined ? { notes: body.notes } : {}),
         ...(body.role !== undefined && isAuthorized ? { role: body.role } : {}),
         ...(body.status !== undefined && isAuthorized ? { status: body.status } : {}),
         ...(body.departmentId !== undefined && isAuthorized ? { departmentId: body.departmentId } : {}),

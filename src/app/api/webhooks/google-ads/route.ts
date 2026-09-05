@@ -56,7 +56,8 @@ export async function POST(request: Request) {
           preferredSize,
           budgetMax,
           notes: `${notes} (Campaign: ${body.campaign_id || body.campaignName || 'Search Campaign'})`,
-          assignedAt: new Date(),
+          assignedAgentId: null,
+          assignedAt: null,
           slaStatus: 'ON_TRACK',
         },
       });

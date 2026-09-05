@@ -12,7 +12,6 @@ import {
   DollarSign,
   ClipboardList,
   ExternalLink,
-  Sparkles,
   Volume2,
   VolumeX,
   RefreshCw,
@@ -243,54 +242,6 @@ export function NotificationsPopover() {
     setIsOpen(false);
     if (n.link) {
       router.push(n.link);
-    }
-  };
-
-  // Trigger demo/test notification
-  const triggerTestNotification = async () => {
-    setIsLoading(true);
-    try {
-      const types = [
-        {
-          title: '⚡ New Lead Auto-Assigned',
-          message: 'Client "M. Bilal" inquired about 1 Kanal plot in Kohistan Enclave.',
-          type: 'LEAD',
-          link: '/leads',
-        },
-        {
-          title: '💰 Token Payment Verified',
-          message: 'PKR 1,000,000 token verified by Accounts for Plot 88 DHA Phase 8.',
-          type: 'PAYMENT',
-          link: '/finance/payments',
-        },
-        {
-          title: '📅 Site Visit Scheduled',
-          message: 'Scheduled site tour for Overseas block tomorrow at 4:30 PM.',
-          type: 'VISIT',
-          link: '/leads',
-        },
-        {
-          title: '📋 High Priority Task Assigned',
-          message: 'Prepare official NOC verification file for client review.',
-          type: 'TASK',
-          link: '/tasks',
-        },
-      ];
-
-      const sample = types[Math.floor(Math.random() * types.length)];
-
-      await fetch('/api/notifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sample),
-      });
-
-      if (soundEnabled) playChime();
-      await fetchNotifications();
-    } catch (err) {
-      console.error('Test notification error:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -591,21 +542,14 @@ export function NotificationsPopover() {
             )}
           </div>
 
-          {/* Footer with Quick Test Action */}
+          {/* Footer */}
           <div className="p-2.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/70 flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 text-[10px] font-medium flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live CRM Sync
+            <span className="text-slate-400 text-[10px] font-medium flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Realtime CRM Alerts Active
             </span>
-
-            <button
-              onClick={triggerTestNotification}
-              disabled={isLoading}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-brand-700 dark:text-brand-300 bg-brand-100/70 dark:bg-brand-950/60 hover:bg-brand-200/70 dark:hover:bg-brand-900/60 border border-brand-300/40 dark:border-brand-800/50 transition-colors disabled:opacity-50"
-              title="Dispatch a real CRM notification to test"
-            >
-              <Sparkles className="w-3 h-3 text-amber-500" />
-              {isLoading ? 'Sending...' : 'Send Test Alert'}
-            </button>
+            <span className="text-[10px] text-slate-400 font-mono">
+              {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
+            </span>
           </div>
         </div>
       )}

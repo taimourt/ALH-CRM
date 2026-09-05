@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { assignLeadRoundRobin } from '@/lib/lead-assignment';
 import { createCRMNotification } from '@/lib/notifications';
+import { triggerWorkflow } from '@/lib/automation';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -49,8 +50,18 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    // If a sales agent creates a lead, it is assigned directly to them (they cannot reassign to others)
-    const targetAssignedAgentId = isAgentOnly && user ? user.id : body.assignedAgentId || null;
+    // Determine initial target agent
+    const isExplicitAgent = body.assignedAgentId && body.assignedAgentId !== 'UNASSIGNED' && body.assignedAgentId !== '';
+    const isExplicitUnassigned = body.assignedAgentId === 'UNASSIGNED';
+
+    let initialAgentId: string | null = null;
+    if (isAgentOnly && user) {
+      initialAgentId = user.id;
+    } else if (isExplicitAgent) {
+      initialAgentId = body.assignedAgentId;
+    } else if (isExplicitUnassigned) {
+      initialAgentId = null;
+    }
 
     const newLead = await prisma.lead.create({
       data: {
@@ -66,29 +77,26 @@ export async function POST(request: Request) {
         preferredSize: body.preferredSize || '10 MARLA',
         preferredSociety: body.preferredSociety || 'Kohistan Enclave',
         notes: body.notes || null,
-        assignedAgentId: targetAssignedAgentId,
-        assignedAt: new Date(),
+        assignedAgentId: initialAgentId,
+        assignedAt: initialAgentId ? new Date() : null,
         slaStatus: 'ON_TRACK',
       },
     });
 
-    // If created by admin/manager without an agent specified, auto-distribute via Round-Robin
-    if (!targetAssignedAgentId && !isAgentOnly) {
+    // If no explicit agent was chosen and not explicitly set to Unassigned, attempt Round-Robin if active
+    if (!initialAgentId && !isExplicitUnassigned && !isAgentOnly) {
       try {
-        const assigned = await assignLeadRoundRobin(newLead.id);
-        if (assigned) return NextResponse.json(assigned);
+        await assignLeadRoundRobin(newLead.id);
       } catch (assignErr) {
         console.error('Auto Round-Robin error on lead create:', assignErr);
       }
-    } else {
-      await createCRMNotification({
-        userIds: targetAssignedAgentId ? [targetAssignedAgentId] : [],
-        notifyManagement: true,
-        title: '⚡ New Lead Created',
-        message: `Lead "${newLead.name}" (${newLead.phone}) registered for ${newLead.preferredSociety || 'project'}.`,
-        type: 'LEAD',
-        link: '/leads',
-      });
+    }
+
+    // Trigger workflow (WhatsApp greeting, agent task or unassigned manager alert)
+    try {
+      await triggerWorkflow('NEW_LEAD_CREATED', { leadId: newLead.id });
+    } catch (wfErr) {
+      console.error('Lead automation workflow error:', wfErr);
     }
 
     const leadWithAgent = await prisma.lead.findUnique({
@@ -121,13 +129,20 @@ export async function PATCH(request: Request) {
 
     const isContactStage = stage && stage !== 'NEW';
 
+    const agentUpdateData =
+      !isAgentOnly && assignedAgentId !== undefined
+        ? {
+            assignedAgentId: assignedAgentId === 'UNASSIGNED' || !assignedAgentId ? null : assignedAgentId,
+            assignedAt: assignedAgentId === 'UNASSIGNED' || !assignedAgentId ? null : new Date(),
+          }
+        : {};
+
     const updated = await prisma.lead.update({
       where: { id },
       data: {
         ...(stage ? { stage } : {}),
         ...(notes !== undefined ? { notes } : {}),
-        // Sales agents cannot reassign leads
-        ...(!isAgentOnly && assignedAgentId !== undefined ? { assignedAgentId, assignedAt: new Date() } : {}),
+        ...agentUpdateData,
         ...(isContactStage ? { lastContactedAt: new Date(), slaStatus: 'ON_TRACK' } : {}),
       },
       include: {

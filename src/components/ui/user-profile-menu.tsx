@@ -24,20 +24,25 @@ export function UserProfileMenu() {
 
   useEffect(() => {
     // 1. Initial state from localStorage for fast render
-    const storedName = localStorage.getItem('user_name');
-    const storedEmail = localStorage.getItem('user_email');
-    const storedRole = localStorage.getItem('user_role');
-    const storedAvatar = localStorage.getItem('user_avatar');
+    const syncFromStorage = () => {
+      const storedName = localStorage.getItem('user_name');
+      const storedEmail = localStorage.getItem('user_email');
+      const storedRole = localStorage.getItem('user_role');
+      const storedAvatar = localStorage.getItem('user_avatar');
 
-    if (storedName || storedRole) {
-      setUser((prev) => ({
-        ...prev,
-        name: storedName || prev.name,
-        email: storedEmail || prev.email,
-        role: storedRole || prev.role,
-        avatar: storedAvatar || prev.avatar,
-      }));
-    }
+      if (storedName || storedRole || storedAvatar) {
+        setUser((prev) => ({
+          ...prev,
+          name: storedName || prev.name,
+          email: storedEmail || prev.email,
+          role: storedRole || prev.role,
+          avatar: storedAvatar || prev.avatar,
+        }));
+      }
+    };
+
+    syncFromStorage();
+    window.addEventListener('storage', syncFromStorage);
 
     // 2. Fetch fresh user info from /api/auth/me
     fetch('/api/auth/me')
@@ -64,7 +69,10 @@ export function UserProfileMenu() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('storage', syncFromStorage);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -117,7 +125,7 @@ export function UserProfileMenu() {
           </div>
 
           <Link
-            href="/settings"
+            href="/profile"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2 px-2.5 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >

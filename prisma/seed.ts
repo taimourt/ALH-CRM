@@ -147,7 +147,7 @@ async function main() {
 
   console.log('Created Departments & Teams');
 
-  // 3. Create Users with Lifecycle Statuses (ACTIVE, INACTIVE, SUSPENDED, INVITED)
+  // 3. Create Users (Super Admin and Saif Ur Rehman)
   const userSuperAdmin = await prisma.user.create({
     data: {
       firstName: 'Asad',
@@ -169,88 +169,28 @@ async function main() {
     },
   });
 
-  const userManager = await prisma.user.create({
+  const userSaif = await prisma.user.create({
     data: {
-      firstName: 'Tariq',
-      lastName: 'Mahmood',
-      name: 'Tariq Mahmood',
-      email: 'tariq@asadlandholdings.com',
+      firstName: 'Saif Ur',
+      lastName: 'Rehman',
+      name: 'Saif Ur Rehman',
+      email: 'saif.rehman.buic@gmail.com',
       password: 'hashed_password_123',
-      role: 'MANAGER',
-      roleId: roleManager.id,
+      role: 'SALES_AGENT',
+      roleId: roleSalesAgent.id,
       departmentId: deptSales.id,
       teamId: teamAlpha.id,
+      managerId: userSuperAdmin.id,
       employeeId: 'EMP-002',
       status: 'ACTIVE',
-      jobTitle: 'Senior Sales Manager',
-      phone: '03215551234',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-      lastLoginAt: new Date(Date.now() - 3600000 * 4),
+      jobTitle: 'Sales Agent',
+      phone: '03001234567',
+      whatsappNumber: '03001234567',
+      lastLoginAt: new Date(),
     },
   });
 
-  const userAgent1 = await prisma.user.create({
-    data: {
-      firstName: 'Hamza',
-      lastName: 'Chaudhry',
-      name: 'Hamza Chaudhry',
-      email: 'hamza@asadlandholdings.com',
-      password: 'hashed_password_123',
-      role: 'SALES_AGENT',
-      roleId: roleSalesAgent.id,
-      departmentId: deptSales.id,
-      teamId: teamAlpha.id,
-      managerId: userManager.id,
-      employeeId: 'EMP-003',
-      status: 'ACTIVE',
-      jobTitle: 'Property Sales Executive',
-      phone: '03339876543',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
-      lastLoginAt: new Date(Date.now() - 3600000 * 2),
-    },
-  });
-
-  const userAgent2 = await prisma.user.create({
-    data: {
-      firstName: 'Ayesha',
-      lastName: 'Malik',
-      name: 'Ayesha Malik',
-      email: 'ayesha@asadlandholdings.com',
-      password: 'hashed_password_123',
-      role: 'SALES_AGENT',
-      roleId: roleSalesAgent.id,
-      departmentId: deptSales.id,
-      teamId: teamBeta.id,
-      managerId: userManager.id,
-      employeeId: 'EMP-004',
-      status: 'ACTIVE',
-      jobTitle: 'Property Advisor',
-      phone: '03124443322',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
-      lastLoginAt: new Date(Date.now() - 3600000 * 12),
-    },
-  });
-
-  const userInvited = await prisma.user.create({
-    data: {
-      firstName: 'Bilal',
-      lastName: 'Ahmed',
-      name: 'Bilal Ahmed',
-      email: 'bilal@asadlandholdings.com',
-      password: 'unassigned_password',
-      role: 'SALES_AGENT',
-      roleId: roleSalesAgent.id,
-      departmentId: deptSales.id,
-      teamId: teamBeta.id,
-      employeeId: 'EMP-005',
-      status: 'INVITED',
-      jobTitle: 'Junior Sales Executive',
-      invitationToken: 'inv_tok_9988776655443322',
-      invitationExpiresAt: new Date(Date.now() + 86400000 * 7),
-    },
-  });
-
-  console.log('Created Users');
+  console.log('Created Users: Super Admin (Asad Khan) and Sales Agent (Saif Ur Rehman)');
 
   // 4. Create Email Templates
   await prisma.emailTemplate.createMany({
@@ -301,7 +241,7 @@ async function main() {
         actorId: userSuperAdmin.id,
         action: 'USER_CREATED',
         targetType: 'USER',
-        targetId: userInvited.id,
+        targetId: userSaif.id,
       },
       {
         actorId: userSuperAdmin.id,

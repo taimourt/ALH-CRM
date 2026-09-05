@@ -72,7 +72,8 @@ export async function POST(request: Request) {
           preferredSize,
           budgetMax,
           notes: `${notes} (Ad Form: ${body.form_id || body.ad_id || 'Lead Form'})`,
-          assignedAt: new Date(),
+          assignedAgentId: null,
+          assignedAt: null,
           slaStatus: 'ON_TRACK',
         },
       });

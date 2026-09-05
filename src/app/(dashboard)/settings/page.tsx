@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import Link from 'next/link';
 import { PermissionGuard } from '@/components/auth/permission-guard';
+import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -116,7 +117,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Settings Sub Nav */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 text-xs font-semibold">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 text-xs font-semibold overflow-x-auto">
+          <Link href="/profile" className="text-slate-500 hover:text-brand-600 dark:hover:text-slate-200 px-3 pb-2 flex items-center gap-1">
+            <User className="w-3.5 h-3.5" /> My Profile & Photo
+          </Link>
           <Link href="/settings" className="text-brand-600 border-b-2 border-brand-600 pb-2 px-1">
             General & Security Settings
           </Link>
@@ -138,6 +142,9 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* LEAD ROUTING & ROUND-ROBIN MASTER SWITCH */}
+          <RoundRobinToggle />
+
           {/* 1. CHANGE EMAIL ADDRESS CARD */}
           <Card className="p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">

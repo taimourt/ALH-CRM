@@ -3,6 +3,7 @@ import { queueAndSendEmail } from './email-service';
 import { recordAuditLog } from './audit';
 import { formatPKR } from './utils';
 import { createCRMNotification } from './notifications';
+import { isRoundRobinEnabled, getRoundRobinSettingDetails } from './settings';
 
 export interface RoundRobinAgent {
   id: string;
@@ -86,8 +87,18 @@ export async function getActiveSalesAgents(): Promise<RoundRobinAgent[]> {
 
 /**
  * 2. Assign Lead automatically using Round-Robin algorithm
+ * Supports { force: true } to bypass paused state (e.g. manual bulk dispatch)
  */
-export async function assignLeadRoundRobin(leadId: string) {
+export async function assignLeadRoundRobin(leadId: string, options?: { force?: boolean }) {
+  // Check if round-robin is enabled unless explicitly forced
+  if (!options?.force) {
+    const enabled = await isRoundRobinEnabled();
+    if (!enabled) {
+      console.log(`[Round-Robin] Lead distribution is PAUSED. Lead ${leadId} held in Unassigned Pool.`);
+      return null;
+    }
+  }
+
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
   });
@@ -233,7 +244,7 @@ export async function reassignLeadManually({
   reason,
 }: {
   leadId: string;
-  newAgentId: string;
+  newAgentId: string | null;
   actorId?: string;
   actorName?: string;
   reason?: string;
@@ -245,13 +256,41 @@ export async function reassignLeadManually({
 
   if (!lead) throw new Error('Lead not found');
 
+  const oldAgentName = lead.assignedAgent?.name || 'Unassigned Pool';
+
+  // If unassigning lead to Unassigned Pool
+  if (!newAgentId || newAgentId === 'UNASSIGNED') {
+    const updatedLead = await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        previousAgentId: lead.assignedAgentId || null,
+        assignedAgentId: null,
+        assignedAt: null,
+        slaStatus: 'ON_TRACK',
+      },
+      include: {
+        assignedAgent: true,
+      },
+    });
+
+    await recordAuditLog({
+      actorId,
+      action: 'LEAD_MOVED_TO_UNASSIGNED_POOL',
+      targetType: 'LEAD',
+      targetId: leadId,
+      beforeValue: { assignedTo: oldAgentName },
+      afterValue: { assignedTo: 'Unassigned Pool', assignedBy: actorName || 'Admin', reason },
+    });
+
+    return updatedLead;
+  }
+
   const newAgent = await prisma.user.findUnique({
     where: { id: newAgentId },
   });
 
   if (!newAgent) throw new Error('Target Agent not found');
 
-  const oldAgentName = lead.assignedAgent?.name || 'Unassigned';
   const now = new Date();
 
   const updatedLead = await prisma.lead.update({

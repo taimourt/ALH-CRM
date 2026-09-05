@@ -26,6 +26,7 @@ import { useToast } from '@/components/ui/toast';
 import { formatPKR, formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { PermissionGuard } from '@/components/auth/permission-guard';
+import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 
 export default function ApiIntegrationsManagerPage() {
   const { toast } = useToast();
@@ -313,6 +314,9 @@ export default function ApiIntegrationsManagerPage() {
           </div>
         </Card>
       </div>
+
+      {/* Lead Routing Master Switch */}
+      <RoundRobinToggle />
 
       {/* Integration Tabs */}
       <div className="flex items-center gap-2 text-xs font-bold border-b border-slate-200 dark:border-slate-800 pb-2">

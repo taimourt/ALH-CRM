@@ -2,13 +2,7 @@ import { NextResponse } from 'next/server';
 import { triggerWorkflow, AutomationEvent } from '@/lib/automation';
 
 export async function GET() {
-  try {
-    const result = await triggerWorkflow('GOOGLE_SHEETS_SYNC', {});
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Trigger automation API error:', error);
-    return NextResponse.json({ error: 'Failed to execute automation workflow' }, { status: 500 });
-  }
+  return NextResponse.json({ status: 'ready', message: 'Automation engine active' });
 }
 
 export async function POST(request: Request) {

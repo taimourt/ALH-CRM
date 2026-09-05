@@ -20,13 +20,6 @@ export function Header({ onOpenCommandPalette, onOpenQuickAdd }: HeaderProps) {
     if (document.documentElement.classList.contains('dark')) {
       setDarkMode(true);
     }
-
-    // Automated periodic background trigger for Google Sheets Leads sync (every 60s)
-    const syncInterval = setInterval(() => {
-      fetch('/api/automation/trigger', { method: 'GET' }).catch(() => {});
-    }, 60000);
-
-    return () => clearInterval(syncInterval);
   }, []);
 
   const toggleDarkMode = () => {

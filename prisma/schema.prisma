@@ -57,6 +57,8 @@ model User {
   auditLogs           AuditLog[]      @relation("ActorAuditLogs")
   managedDepartments  Department[]    @relation("DepartmentManager")
   ledTeams            Team[]          @relation("TeamLeader")
+  emailChangeRequests EmailChangeRequest[] @relation("UserEmailChangeRequests")
+  reviewedEmailChanges EmailChangeRequest[] @relation("EmailChangeReviewer")
 }
 
 model Department {
@@ -433,4 +435,29 @@ model ActivityLog {
   userId      String?
   user        User?    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model SystemSetting {
+  key         String   @id
+  value       String   // JSON string or scalar string
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model EmailChangeRequest {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation("UserEmailChangeRequests", fields: [userId], references: [id], onDelete: Cascade)
+  currentEmail    String
+  newEmail        String
+  reason          String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  reviewedById    String?
+  reviewedBy      User?     @relation("EmailChangeReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

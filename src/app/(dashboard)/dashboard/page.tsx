@@ -863,10 +863,12 @@ export default function DashboardPage() {
                   🥇 Top Producing Agent
                 </span>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">
-                  {topAgent?.name || 'Hamza Malik'}
+                  {topAgent && (topAgent.deals > 0 || topAgent.rawSales > 0) ? topAgent.name : 'No Closed Deals Yet'}
                 </h4>
                 <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">
-                  {topAgent?.sales} Sales ({topAgent?.deals} Won)
+                  {topAgent && (topAgent.deals > 0 || topAgent.rawSales > 0)
+                    ? `${topAgent.sales} Sales (${topAgent.deals} Won)`
+                    : 'Awaiting Closed Deals'}
                 </p>
               </div>
               <Crown className="w-7 h-7 text-amber-500 shrink-0" />
@@ -878,7 +880,7 @@ export default function DashboardPage() {
                   👥 Active Agents Roster
                 </span>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">
-                  {displayAgentLeaderboard.length} Dedicated Agents
+                  {displayAgentLeaderboard.length} Dedicated Agent{displayAgentLeaderboard.length === 1 ? '' : 's'}
                 </h4>
                 <p className="text-[11px] text-brand-600 font-semibold mt-0.5">
                   100% Round-Robin Workload Active
@@ -893,7 +895,7 @@ export default function DashboardPage() {
                   💼 Total Closed Team Volume
                 </span>
                 <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                  {totalTeamVolume > 0 ? formatPKR(totalTeamVolume) : 'PKR 13.3 Crore'}
+                  {formatPKR(totalTeamVolume)}
                 </h4>
                 <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                   Across Islamabad & Rawalpindi

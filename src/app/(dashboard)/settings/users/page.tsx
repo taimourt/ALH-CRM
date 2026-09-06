@@ -57,6 +57,8 @@ export default function UsersPage() {
     role: 'SALES_AGENT',
     departmentId: '',
     jobTitle: 'Sales Advisor',
+    territory: 'Kohistan Enclave',
+    monthlyTarget: '50000000',
     sendInvite: true,
   });
 
@@ -450,6 +452,32 @@ export default function UsersPage() {
               label="Job Title"
               value={newUser.jobTitle}
               onChange={(e) => setNewUser({ ...newUser, jobTitle: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Assigned Territory / Society"
+              value={newUser.territory}
+              onChange={(e) => setNewUser({ ...newUser, territory: e.target.value })}
+            >
+              <option value="Kohistan Enclave">Kohistan Enclave</option>
+              <option value="New City Paradise">New City Paradise</option>
+              <option value="Faisal Town Phase 2">Faisal Town Phase 2</option>
+              <option value="B-17 Multi Gardens">B-17 Multi Gardens</option>
+              <option value="DHA Phase 2 Islamabad">DHA Phase 2 Islamabad</option>
+              <option value="Bahria Town Rawalpindi">Bahria Town Rawalpindi</option>
+              <option value="Park View City">Park View City</option>
+              <option value="Gulberg Greens">Gulberg Greens</option>
+              <option value="Capital Smart City">Capital Smart City</option>
+            </Select>
+
+            <Input
+              label="Monthly Sales Quota (PKR)"
+              type="number"
+              step="1000000"
+              value={newUser.monthlyTarget}
+              onChange={(e) => setNewUser({ ...newUser, monthlyTarget: e.target.value })}
             />
           </div>
 

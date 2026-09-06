@@ -65,10 +65,10 @@ export async function PATCH(
 
     if (!currentUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    // Modifying another user or changing sensitive fields (role, status, department) requires Super Admin or Manager
-    if (!isAuthorized && (authUser.id !== params.id || body.role || body.status || body.departmentId)) {
+    // Modifying another user or changing sensitive fields (role, status, department, territory, monthlyTarget) requires Super Admin or Manager
+    if (!isAuthorized && (authUser.id !== params.id || body.role || body.status || body.departmentId || body.territory !== undefined || body.monthlyTarget !== undefined)) {
       return NextResponse.json(
-        { error: 'Forbidden: Only Super Admin and Managers have access to modify staff accounts and roles.' },
+        { error: 'Forbidden: Only Super Admin and Managers have access to modify staff accounts, roles, territories, and quota targets.' },
         { status: 403 }
       );
     }
@@ -89,6 +89,8 @@ export async function PATCH(
         ...(body.managerId !== undefined && isAuthorized ? { managerId: body.managerId } : {}),
         ...(body.phone !== undefined ? { phone: body.phone } : {}),
         ...(body.jobTitle !== undefined ? { jobTitle: body.jobTitle } : {}),
+        ...(body.territory !== undefined && isAuthorized ? { territory: body.territory } : {}),
+        ...(body.monthlyTarget !== undefined && isAuthorized ? { monthlyTarget: parseFloat(body.monthlyTarget) || 50000000 } : {}),
       },
       include: {
         department: true,
@@ -105,6 +107,16 @@ export async function PATCH(
         targetId: params.id,
         beforeValue: { role: currentUser.role, status: currentUser.status },
         afterValue: { role: updatedUser.role, status: updatedUser.status },
+      });
+    }
+
+    if (body.territory !== undefined || body.monthlyTarget !== undefined) {
+      await recordAuditLog({
+        action: 'AGENT_TARGET_TERRITORY_UPDATED',
+        targetType: 'USER',
+        targetId: params.id,
+        beforeValue: { territory: currentUser.territory, monthlyTarget: currentUser.monthlyTarget },
+        afterValue: { territory: updatedUser.territory, monthlyTarget: updatedUser.monthlyTarget },
       });
     }
 

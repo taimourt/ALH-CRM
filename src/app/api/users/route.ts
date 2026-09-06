@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { firstName, lastName, email, phone, role, departmentId, teamId, managerId, employeeId, jobTitle, whatsappNumber, notes, sendInvite } = body;
+    const { firstName, lastName, email, phone, role, departmentId, teamId, managerId, employeeId, jobTitle, whatsappNumber, notes, territory, monthlyTarget, sendInvite } = body;
 
     if (!email || !firstName) {
       return NextResponse.json({ error: 'First name and email are required' }, { status: 400 });
@@ -107,6 +107,8 @@ export async function POST(request: Request) {
         jobTitle: jobTitle || 'Sales Executive',
         whatsappNumber: whatsappNumber || phone || null,
         notes: notes || null,
+        territory: territory || 'Kohistan Enclave',
+        monthlyTarget: monthlyTarget !== undefined && monthlyTarget !== null ? parseFloat(monthlyTarget) || 50000000 : 50000000,
         status: sendInvite ? 'INVITED' : 'ACTIVE',
         invitationToken: sendInvite ? invitationToken : null,
         invitationExpiresAt: sendInvite ? invitationExpiresAt : null,

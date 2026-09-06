@@ -32,6 +32,8 @@ model User {
   whatsappNumber      String?
   avatar              String?
   notes               String?
+  territory           String?         @default("Kohistan Enclave")
+  monthlyTarget       Float?          @default(50000000)
   active              Boolean         @default(true)
   lastLoginAt         DateTime?
   passwordChangedAt   DateTime?

@@ -88,7 +88,7 @@ export default function AgentsPage() {
 
     const quotaTarget = 50000000; // PKR 5 Crore monthly quota
     const quotaPct = Math.min(100, Math.round((closedVolume / quotaTarget) * 100));
-    const commissionEarned = Math.round(closedVolume * 0.01 * 0.6); // 1% deal comm * 60% agent share
+    const commissionEarned = Math.round(closedVolume * 0.01 * 0.7); // 1% deal comm * 70% agent share
 
     return {
       ...agent,
@@ -131,7 +131,7 @@ export default function AgentsPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Sales quota tracking, closed revenue volume, 24h SLA speed-to-lead compliance, and 60% commission splits.
+              Sales quota tracking, closed revenue volume, 24h SLA speed-to-lead compliance, and 70% commission splits.
             </p>
           </div>
 
@@ -184,7 +184,7 @@ export default function AgentsPage() {
           </Card>
 
           <Card className="p-4 border-l-4 border-l-emerald-600 bg-emerald-50/10">
-            <span className="text-[11px] font-bold uppercase text-slate-500">💰 60% Agent Commissions</span>
+            <span className="text-[11px] font-bold uppercase text-slate-500">💰 70% Agent Commissions</span>
             <h3 className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
               {formatPKR(totalTeamCommissions)}
             </h3>
@@ -231,7 +231,7 @@ export default function AgentsPage() {
                 <th className="p-3.5">Monthly Quota Progress</th>
                 <th className="p-3.5">Closed Deals & Win Rate</th>
                 <th className="p-3.5">Sales Revenue (PKR)</th>
-                <th className="p-3.5">Commission (60%)</th>
+                <th className="p-3.5">Commission (70%)</th>
                 <th className="p-3.5 text-right">Action</th>
               </tr>
             </thead>
@@ -367,7 +367,7 @@ export default function AgentsPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">60% Commission Earned</span>
+                  <span className="text-slate-500">70% Commission Earned</span>
                   <span className="font-extrabold font-mono text-emerald-600 text-sm">
                     {formatPKR(selectedAgent.commissionEarned)}
                   </span>

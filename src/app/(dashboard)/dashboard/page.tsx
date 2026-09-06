@@ -398,7 +398,7 @@ export default function DashboardPage() {
       const salesVolume =
         agentDeals.reduce((sum, d) => sum + (d.amount || 0), 0) +
         agentLeadsClosed.reduce((sum, l) => sum + (l.budgetMax || 0), 0);
-      const commission = Math.round(salesVolume * 0.01 * 0.6);
+      const commission = Math.round(salesVolume * 0.01 * 0.7);
       const conversionRate =
         agentAssignedLeads.length > 0 ? Math.round((closedDeals / agentAssignedLeads.length) * 100) : 0;
 
@@ -917,7 +917,7 @@ export default function DashboardPage() {
                   <th className="p-3">Deals Won</th>
                   <th className="p-3">Win Rate</th>
                   <th className="p-3">Sales Volume (Gross)</th>
-                  <th className="p-3 text-right">Commission (60%)</th>
+                  <th className="p-3 text-right">Commission (70%)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

@@ -12,7 +12,7 @@ export interface CommissionBreakdown {
 export function calculateCommissionSplit(
   dealAmount: number,
   commissionRate: number = 1.0,
-  agentSplitPct: number = 60,
+  agentSplitPct: number = 70,
   managerSplitPct: number = 15
 ): CommissionBreakdown {
   const totalCompanyCommission = (dealAmount * commissionRate) / 100;

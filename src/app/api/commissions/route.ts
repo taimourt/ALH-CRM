@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const breakdown = calculateCommissionSplit(
       parseFloat(dealAmount) || 10000000,
       parseFloat(commissionRate) || 1.0,
-      parseFloat(agentSplitPct) || 60,
+      parseFloat(agentSplitPct) || 70,
       parseFloat(managerSplitPct) || 15
     );
 

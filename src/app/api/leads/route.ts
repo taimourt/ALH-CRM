@@ -216,9 +216,9 @@ export async function PATCH(request: Request) {
                 amount: totalCommission,
                 percentage: 1.0,
                 totalDealCommission: totalCommission,
-                agentShare: totalCommission * 0.6,
+                agentShare: totalCommission * 0.7,
                 managerShare: totalCommission * 0.15,
-                companyShare: totalCommission * 0.25,
+                companyShare: totalCommission * 0.15,
                 status: 'APPROVED',
               },
             });

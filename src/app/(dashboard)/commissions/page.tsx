@@ -32,7 +32,7 @@ export default function CommissionsPage() {
   // Configurable Calculator Inputs
   const [calcDealAmount, setCalcDealAmount] = useState('10000000'); // PKR 10,000,000 specification test
   const [calcCommissionRate, setCalcCommissionRate] = useState('1.0'); // 1%
-  const [calcAgentPct, setCalcAgentPct] = useState('60'); // 60%
+  const [calcAgentPct, setCalcAgentPct] = useState('70'); // 70%
   const [calcManagerPct, setCalcManagerPct] = useState('15'); // 15%
 
   async function fetchCommissions() {
@@ -218,7 +218,7 @@ export default function CommissionsPage() {
                   {c.agentName || c.agent?.name || 'Hamza Chaudhry'}
                 </td>
                 <td className="p-3.5 font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {formatPKR(c.agentShare || 60000)}
+                  {formatPKR(c.agentShare || 70000)}
                 </td>
                 {userRole === 'SUPER_ADMIN' && (
                   <>
@@ -226,7 +226,7 @@ export default function CommissionsPage() {
                       {formatPKR(c.managerShare || 15000)}
                     </td>
                     <td className="p-3.5 font-bold text-amber-600">
-                      {formatPKR(c.companyRetained || 25000)}
+                      {formatPKR(c.companyRetained || 15000)}
                     </td>
                   </>
                 )}

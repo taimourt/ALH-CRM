@@ -51,6 +51,8 @@ import {
   Hammer,
   Calculator,
   Wrench,
+  Edit3,
+  Edit,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,6 +67,7 @@ import { useRBAC } from '@/contexts/rbac-context';
 import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 import { DisqualifyLeadModal, DISQUALIFY_REASONS } from '@/components/leads/disqualify-lead-modal';
 import { ConstructionEstimatorModal } from '@/components/leads/construction-estimator-modal';
+import { EditLeadModal } from '@/components/leads/edit-lead-modal';
 import {
   ServiceCategory,
   ConstructionQuality,
@@ -99,6 +102,10 @@ function LeadsPageContent() {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Edit Lead Modal State
+  const [editLeadModalOpen, setEditLeadModalOpen] = useState(false);
+  const [leadToEdit, setLeadToEdit] = useState<any | null>(null);
 
   // Disqualification Modal & Archive States
   const [disqualifyModalOpen, setDisqualifyModalOpen] = useState(false);
@@ -224,6 +231,12 @@ function LeadsPageContent() {
     if (selectedLead?.id === leadId) {
       setSelectedLead(null);
     }
+  };
+
+  const handleOpenEditLead = (lead: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setLeadToEdit(lead);
+    setEditLeadModalOpen(true);
   };
 
   const handleReactivateLead = async (lead: any) => {
@@ -841,17 +854,27 @@ function LeadsPageContent() {
                                   </h4>
                                   <span className="text-[11px] font-mono text-emerald-600">{lead.phone}</span>
                                 </div>
-                                <span
-                                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                                    (lead.score || 50) >= 80
-                                      ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
-                                      : (lead.score || 50) >= 50
-                                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                                      : 'bg-slate-100 text-slate-500'
-                                  }`}
-                                >
-                                  🔥 Score {lead.score || 50}
-                                </span>
+                                <div className="flex items-center gap-1">
+                                  <span
+                                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                      (lead.score || 50) >= 80
+                                        ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                                        : (lead.score || 50) >= 50
+                                        ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                                        : 'bg-slate-100 text-slate-500'
+                                    }`}
+                                  >
+                                    🔥 {lead.score || 50}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleOpenEditLead(lead, e)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors"
+                                    title="Edit Lead Profile & Preferences"
+                                  >
+                                    <Edit3 className="w-3 h-3" />
+                                  </button>
+                                </div>
                               </div>
 
                               <div className="space-y-1 text-[11px] text-slate-500">
@@ -1039,6 +1062,14 @@ function LeadsPageContent() {
                         </td>
                         <td className="p-3.5 text-right">
                           <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenEditLead(lead, e)}
+                              className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-colors"
+                              title="Edit Lead Profile & Details"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               type="button"
                               onClick={() => {
@@ -1711,6 +1742,17 @@ function LeadsPageContent() {
               </Button>
             </div>
 
+            {/* Edit Lead Profile Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenEditLead(selectedLead)}
+              className="w-full text-xs font-bold text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 shadow-2xs"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-brand-600" />
+              ✏️ Edit Lead Profile &amp; Preferences
+            </Button>
+
             {/* Quick Action Contact Buttons */}
             <div className="grid grid-cols-2 gap-2">
               <a
@@ -2126,6 +2168,25 @@ function LeadsPageContent() {
         }}
         lead={estimatorLead}
         onSaved={(updatedLead) => {
+          if (selectedLead?.id === updatedLead.id) {
+            setSelectedLead(updatedLead);
+          }
+          fetchAllContactsData();
+        }}
+      />
+
+      {/* Edit Lead Profile & Parameters Modal */}
+      <EditLeadModal
+        isOpen={editLeadModalOpen}
+        onClose={() => {
+          setEditLeadModalOpen(false);
+          setLeadToEdit(null);
+        }}
+        lead={leadToEdit}
+        agents={agents}
+        canAssignLeads={canAssignLeads}
+        onLeadUpdated={(updatedLead) => {
+          setLeads((prev) => prev.map((l) => (l.id === updatedLead.id ? updatedLead : l)));
           if (selectedLead?.id === updatedLead.id) {
             setSelectedLead(updatedLead);
           }

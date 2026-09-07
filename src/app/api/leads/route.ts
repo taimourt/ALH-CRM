@@ -140,7 +140,26 @@ export async function PATCH(request: Request) {
     const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
 
     const body = await request.json();
-    const { id, stage, notes, assignedAgentId, serviceCategory, coveredAreaSqFt, constructionQuality, estimatedConstructionCost, budgetMin, budgetMax, preferredSociety, preferredSize, preferredType } = body;
+    const {
+      id,
+      name,
+      phone,
+      email,
+      source,
+      score,
+      stage,
+      notes,
+      assignedAgentId,
+      serviceCategory,
+      coveredAreaSqFt,
+      constructionQuality,
+      estimatedConstructionCost,
+      budgetMin,
+      budgetMax,
+      preferredSociety,
+      preferredSize,
+      preferredType,
+    } = body;
 
     const existingLead = await prisma.lead.findUnique({ where: { id } });
     if (!existingLead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
@@ -163,6 +182,11 @@ export async function PATCH(request: Request) {
     const updated = await prisma.lead.update({
       where: { id },
       data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(phone !== undefined ? { phone } : {}),
+        ...(email !== undefined ? { email: email || null } : {}),
+        ...(source !== undefined ? { source } : {}),
+        ...(score !== undefined ? { score: score ? parseInt(score, 10) : 50 } : {}),
         ...(stage ? { stage } : {}),
         ...(notes !== undefined ? { notes } : {}),
         ...(serviceCategory !== undefined ? { serviceCategory } : {}),

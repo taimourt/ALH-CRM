@@ -48,6 +48,9 @@ import {
   Home,
   PhoneOff,
   Filter,
+  Hammer,
+  Calculator,
+  Wrench,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +64,14 @@ import { PermissionGuard } from '@/components/auth/permission-guard';
 import { useRBAC } from '@/contexts/rbac-context';
 import { RoundRobinToggle } from '@/components/leads/round-robin-toggle';
 import { DisqualifyLeadModal, DISQUALIFY_REASONS } from '@/components/leads/disqualify-lead-modal';
+import { ConstructionEstimatorModal } from '@/components/leads/construction-estimator-modal';
+import {
+  ServiceCategory,
+  ConstructionQuality,
+  PLOT_SIZE_PRESETS,
+  SERVICE_CATEGORY_LABELS,
+  calculateConstructionEstimate,
+} from '@/lib/construction-calculator';
 
 const STAGES = [
   { id: 'NEW', label: 'New Inquiries', color: 'bg-blue-500', border: 'border-blue-500/40', bgLight: 'bg-blue-500/10' },
@@ -95,6 +106,11 @@ function LeadsPageContent() {
   const [archiveFilterReason, setArchiveFilterReason] = useState<string>('ALL');
   const [reactivatingLeadId, setReactivatingLeadId] = useState<string | null>(null);
 
+  // Category Filter & Construction Estimator States
+  const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  const [estimatorModalOpen, setEstimatorModalOpen] = useState(false);
+  const [estimatorLead, setEstimatorLead] = useState<any | null>(null);
+
   // Drag and Drop States for Kanban
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
@@ -111,9 +127,12 @@ function LeadsPageContent() {
     name: '',
     phone: '',
     email: '',
+    serviceCategory: 'PROPERTY_PURCHASE',
     preferredSociety: 'Kohistan Enclave',
     preferredSize: '10 MARLA',
     preferredType: 'RESIDENTIAL_PLOT',
+    coveredAreaSqFt: '2200',
+    constructionQuality: 'PREMIUM_A',
     budgetMax: '15000000',
     notes: '',
     assignedAgentId: '',
@@ -341,10 +360,18 @@ function LeadsPageContent() {
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const isConstruction = newLead.serviceCategory !== 'PROPERTY_PURCHASE';
+      const payload = {
+        ...newLead,
+        coveredAreaSqFt: isConstruction ? parseFloat(newLead.coveredAreaSqFt) || 2200 : null,
+        constructionQuality: isConstruction ? newLead.constructionQuality : null,
+        budgetMax: parseFloat(newLead.budgetMax) || null,
+      };
+
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newLead),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         toast('Lead Created', `Added ${newLead.name} to the pipeline. Assigned via Round-Robin.`, 'success');
@@ -353,9 +380,12 @@ function LeadsPageContent() {
           name: '',
           phone: '',
           email: '',
+          serviceCategory: 'PROPERTY_PURCHASE',
           preferredSociety: 'Kohistan Enclave',
           preferredSize: '10 MARLA',
           preferredType: 'RESIDENTIAL_PLOT',
+          coveredAreaSqFt: '2200',
+          constructionQuality: 'PREMIUM_A',
           budgetMax: '15000000',
           notes: '',
           assignedAgentId: '',
@@ -423,13 +453,21 @@ function LeadsPageContent() {
   };
 
   // Filtered Leads
-  const filteredLeads = leads.filter(
-    (l) =>
+  const filteredLeads = leads.filter((l) => {
+    const matchesSearch =
       l.name?.toLowerCase().includes(search.toLowerCase()) ||
       l.phone?.includes(search) ||
       l.preferredSociety?.toLowerCase().includes(search.toLowerCase()) ||
-      l.assignedAgent?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+      l.assignedAgent?.name?.toLowerCase().includes(search.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (categoryFilter === 'ALL') return true;
+    if (categoryFilter === 'PROPERTY_PURCHASE') {
+      return !l.serviceCategory || l.serviceCategory === 'PROPERTY_PURCHASE';
+    }
+    return l.serviceCategory === categoryFilter;
+  });
 
   // Fallback demo buyers if database is fresh
   const displayCustomers =
@@ -687,6 +725,57 @@ function LeadsPageContent() {
       {/* ========================================================================= */}
       {activeTab === 'LEADS' && (
         <>
+          {/* 🏷️ SERVICE CATEGORY FILTER BAR & ESTIMATOR TRIGGER */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 flex items-center gap-1">
+                <Filter className="w-3 h-3 text-slate-400" /> Filter:
+              </span>
+              {[
+                { id: 'ALL', label: 'All Services', count: leads.length },
+                { id: 'PROPERTY_PURCHASE', label: '🏡 Property Sales', count: leads.filter((l) => !l.serviceCategory || l.serviceCategory === 'PROPERTY_PURCHASE').length },
+                { id: 'CONSTRUCTION_TURNKEY', label: '🏗️ Turnkey Build', count: leads.filter((l) => l.serviceCategory === 'CONSTRUCTION_TURNKEY').length },
+                { id: 'CONSTRUCTION_GREY_STRUCTURE', label: '🧱 Grey Structure', count: leads.filter((l) => l.serviceCategory === 'CONSTRUCTION_GREY_STRUCTURE').length },
+                { id: 'RENOVATION_INTERIOR', label: '🎨 Renovation', count: leads.filter((l) => l.serviceCategory === 'RENOVATION_INTERIOR').length },
+                { id: 'ARCHITECTURAL_DESIGN', label: '📐 Architecture', count: leads.filter((l) => l.serviceCategory === 'ARCHITECTURAL_DESIGN').length },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setCategoryFilter(item.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 ${
+                    categoryFilter === item.id
+                      ? 'bg-brand-600 text-white shadow-xs font-bold'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300 border border-slate-200/80 dark:border-slate-700'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      categoryFilter === item.id
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    {item.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEstimatorLead(null);
+                setEstimatorModalOpen(true);
+              }}
+              className="text-xs font-bold gap-1.5 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700/80 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 shrink-0 shadow-2xs"
+            >
+              <Hammer className="w-3.5 h-3.5 text-amber-500" />
+              <span>🏗️ Cost Estimator &amp; WhatsApp Quote</span>
+            </Button>
+          </div>
+
           {view === 'kanban' ? (
             <div className="flex gap-4 overflow-x-auto pb-6 pt-1 select-none min-h-[calc(100vh-280px)]">
               {STAGES.map((stage) => {
@@ -728,6 +817,7 @@ function LeadsPageContent() {
                           const assignedTime = new Date(lead.assignedAt || lead.createdAt).getTime();
                           const hoursElapsed = Math.round((Date.now() - assignedTime) / (1000 * 60 * 60));
                           const isStale = (lead.stage === 'NEW' || lead.stage === 'UNTOUCHED') && hoursElapsed >= 24;
+                          const isConstruction = lead.serviceCategory && lead.serviceCategory !== 'PROPERTY_PURCHASE';
 
                           return (
                             <div
@@ -779,6 +869,41 @@ function LeadsPageContent() {
                                 </div>
                               </div>
 
+                              {/* Construction Service Badge & Quick Quote Button */}
+                              {isConstruction && (
+                                <div className="flex items-center justify-between gap-1 p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-[10px]">
+                                  <div className="flex items-center gap-1 font-bold text-amber-700 dark:text-amber-300 truncate">
+                                    <Hammer className="w-3 h-3 text-amber-500 shrink-0" />
+                                    <span className="truncate">
+                                      {lead.serviceCategory === 'CONSTRUCTION_TURNKEY'
+                                        ? 'Turnkey Build'
+                                        : lead.serviceCategory === 'CONSTRUCTION_GREY_STRUCTURE'
+                                        ? 'Grey Structure'
+                                        : lead.serviceCategory === 'RENOVATION_INTERIOR'
+                                        ? 'Renovation'
+                                        : 'Architecture'}
+                                    </span>
+                                    {lead.coveredAreaSqFt ? (
+                                      <span className="text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                        ({lead.coveredAreaSqFt.toLocaleString()} sqft)
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEstimatorLead(lead);
+                                      setEstimatorModalOpen(true);
+                                    }}
+                                    className="px-1.5 py-0.5 rounded bg-amber-200/90 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 hover:bg-amber-300 font-bold shrink-0 flex items-center gap-0.5 transition-colors"
+                                    title="Open Construction Cost Calculator & WhatsApp Quote"
+                                  >
+                                    <Calculator className="w-2.5 h-2.5" /> Quote
+                                  </button>
+                                </div>
+                              )}
+
                               {/* Footer: Agent & Stale Alarm */}
                               <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
                                 {lead.assignedAgent ? (
@@ -818,115 +943,145 @@ function LeadsPageContent() {
                   <tr>
                     <th className="p-3.5">Lead Name</th>
                     <th className="p-3.5">Contact Number</th>
-                    <th className="p-3.5">Society & Size</th>
-                    <th className="p-3.5">Budget</th>
+                    <th className="p-3.5">Service & Society</th>
+                    <th className="p-3.5">Budget / Est.</th>
                     <th className="p-3.5">Stage</th>
                     <th className="p-3.5">Assigned Agent</th>
                     <th className="p-3.5 text-right">Instant Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredLeads.map((lead) => (
-                    <tr
-                      key={lead.id}
-                      onClick={() => {
-                        setSelectedLead(lead);
-                        setTargetAgentId(lead.assignedAgentId || '');
-                      }}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
-                    >
-                      <td className="p-3.5 font-bold text-slate-900 dark:text-slate-100">{lead.name}</td>
-                      <td className="p-3.5 font-mono text-emerald-600">{lead.phone}</td>
-                      <td className="p-3.5 text-slate-700 dark:text-slate-300">
-                        {lead.preferredSociety || 'Kohistan Enclave'} • {lead.preferredSize || '10 Marla'}
-                      </td>
-                      <td className="p-3.5 font-mono font-bold text-slate-900 dark:text-slate-100">
-                        {formatPKR(lead.budgetMax || 15000000)}
-                      </td>
-                      <td className="p-3.5">
-                        <Badge variant="purple">{lead.stage}</Badge>
-                      </td>
-                      <td className="p-3.5" onClick={(e) => e.stopPropagation()}>
-                        {lead.assignedAgent ? (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">
-                              👤 {lead.assignedAgent.name}
-                            </span>
-                            {canAssignLeads && (
-                              <select
-                                value={lead.assignedAgentId || ''}
-                                onChange={(e) => handleQuickAssign(lead.id, e.target.value)}
-                                className="text-[10px] py-0.5 px-1 bg-transparent border border-slate-200 dark:border-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
-                                title="Change assigned agent"
-                              >
-                                <option value="UNASSIGNED">📥 Unassign (Move to Pool)</option>
-                                {agents.map((a) => (
-                                  <option key={a.id} value={a.id}>
-                                    {a.name}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
+                  {filteredLeads.map((lead) => {
+                    const isConstruction = lead.serviceCategory && lead.serviceCategory !== 'PROPERTY_PURCHASE';
+
+                    return (
+                      <tr
+                        key={lead.id}
+                        onClick={() => {
+                          setSelectedLead(lead);
+                          setTargetAgentId(lead.assignedAgentId || '');
+                        }}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
+                      >
+                        <td className="p-3.5 font-bold text-slate-900 dark:text-slate-100">{lead.name}</td>
+                        <td className="p-3.5 font-mono text-emerald-600">{lead.phone}</td>
+                        <td className="p-3.5 text-slate-700 dark:text-slate-300">
+                          <div>
+                            {lead.preferredSociety || 'Kohistan Enclave'} • {lead.preferredSize || '10 Marla'}
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400">
-                              📥 Unassigned Pool
+                          {isConstruction && (
+                            <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-700/60">
+                              <Hammer className="w-2.5 h-2.5" />
+                              {lead.serviceCategory === 'CONSTRUCTION_TURNKEY'
+                                ? 'Turnkey'
+                                : lead.serviceCategory === 'CONSTRUCTION_GREY_STRUCTURE'
+                                ? 'Grey Structure'
+                                : lead.serviceCategory === 'RENOVATION_INTERIOR'
+                                ? 'Renovation'
+                                : 'Architecture'}
+                              {lead.coveredAreaSqFt ? ` • ${lead.coveredAreaSqFt.toLocaleString()} sqft` : ''}
                             </span>
-                            {canAssignLeads && (
-                              <select
-                                defaultValue=""
-                                onChange={(e) => {
-                                  if (e.target.value) handleQuickAssign(lead.id, e.target.value);
-                                }}
-                                className="text-[10px] py-1 px-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-300 dark:border-brand-700 font-bold text-brand-700 dark:text-brand-300 rounded-lg hover:bg-brand-100 cursor-pointer"
-                              >
-                                <option value="" disabled>
-                                  + Assign Agent
-                                </option>
-                                {agents.map((a) => (
-                                  <option key={a.id} value={a.id}>
-                                    Assign to {a.name}
+                          )}
+                        </td>
+                        <td className="p-3.5 font-mono font-bold text-slate-900 dark:text-slate-100">
+                          {formatPKR(lead.budgetMax || 15000000)}
+                        </td>
+                        <td className="p-3.5">
+                          <Badge variant="purple">{lead.stage}</Badge>
+                        </td>
+                        <td className="p-3.5" onClick={(e) => e.stopPropagation()}>
+                          {lead.assignedAgent ? (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                                👤 {lead.assignedAgent.name}
+                              </span>
+                              {canAssignLeads && (
+                                <select
+                                  value={lead.assignedAgentId || ''}
+                                  onChange={(e) => handleQuickAssign(lead.id, e.target.value)}
+                                  className="text-[10px] py-0.5 px-1 bg-transparent border border-slate-200 dark:border-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none cursor-pointer"
+                                  title="Change assigned agent"
+                                >
+                                  <option value="UNASSIGNED">📥 Unassign (Move to Pool)</option>
+                                  {agents.map((a) => (
+                                    <option key={a.id} value={a.id}>
+                                      {a.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400">
+                                📥 Unassigned Pool
+                              </span>
+                              {canAssignLeads && (
+                                <select
+                                  defaultValue=""
+                                  onChange={(e) => {
+                                    if (e.target.value) handleQuickAssign(lead.id, e.target.value);
+                                  }}
+                                  className="text-[10px] py-1 px-2 bg-brand-50 dark:bg-brand-950/40 border border-brand-300 dark:border-brand-700 font-bold text-brand-700 dark:text-brand-300 rounded-lg hover:bg-brand-100 cursor-pointer"
+                                >
+                                  <option value="" disabled>
+                                    + Assign Agent
                                   </option>
-                                ))}
-                              </select>
-                            )}
+                                  {agents.map((a) => (
+                                    <option key={a.id} value={a.id}>
+                                      Assign to {a.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEstimatorLead(lead);
+                                setEstimatorModalOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-colors"
+                              title="Construction Cost Estimator & WhatsApp Quote"
+                            >
+                              <Hammer className="w-3.5 h-3.5" />
+                            </button>
+                            <a
+                              href={`https://wa.me/92${lead.phone?.replace(/^0/, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors"
+                              title="Open WhatsApp"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </a>
+                            <a
+                              href={`tel:${lead.phone}`}
+                              className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-colors"
+                              title="Call Client"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLeadToDisqualify(lead);
+                                setDisqualifyModalOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                              title="Disqualify / Move to Cold Archive"
+                            >
+                              <Archive className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        )}
-                      </td>
-                      <td className="p-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <a
-                            href={`https://wa.me/92${lead.phone?.replace(/^0/, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors"
-                            title="Open WhatsApp"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </a>
-                          <a
-                            href={`tel:${lead.phone}`}
-                            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-colors"
-                            title="Call Client"
-                          >
-                            <Phone className="w-3.5 h-3.5" />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLeadToDisqualify(lead);
-                              setDisqualifyModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
-                            title="Disqualify / Move to Cold Archive"
-                          >
-                            <Archive className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </Card>
@@ -1479,6 +1634,20 @@ function LeadsPageContent() {
                 <span className="font-bold font-mono text-emerald-600 text-sm">{selectedLead.phone}</span>
               </div>
               <div className="flex items-center justify-between">
+                <span className="text-slate-500">Service Category</span>
+                <Badge variant={selectedLead.serviceCategory && selectedLead.serviceCategory !== 'PROPERTY_PURCHASE' ? 'warning' : 'default'} className="text-[10px]">
+                  {selectedLead.serviceCategory === 'CONSTRUCTION_TURNKEY'
+                    ? '🏗️ Turnkey Construction'
+                    : selectedLead.serviceCategory === 'CONSTRUCTION_GREY_STRUCTURE'
+                    ? '🧱 Grey Structure'
+                    : selectedLead.serviceCategory === 'RENOVATION_INTERIOR'
+                    ? '🎨 Renovation'
+                    : selectedLead.serviceCategory === 'ARCHITECTURAL_DESIGN'
+                    ? '📐 Architectural Design'
+                    : '🏡 Property Purchase'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
                 <span className="text-slate-500">Target Society</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
                   {selectedLead.preferredSociety || 'Kohistan Enclave'}
@@ -1494,6 +1663,52 @@ function LeadsPageContent() {
                 <span className="text-slate-500">Current Pipeline Stage</span>
                 <Badge variant="purple">{selectedLead.stage}</Badge>
               </div>
+            </div>
+
+            {/* Construction & BOQ Cost Estimator Card */}
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <Hammer className="w-4 h-4 text-amber-500" /> Construction &amp; BOQ Estimator
+                </span>
+                {selectedLead.serviceCategory && selectedLead.serviceCategory !== 'PROPERTY_PURCHASE' ? (
+                  <Badge variant="warning" className="text-[10px]">
+                    Active Project
+                  </Badge>
+                ) : (
+                  <span className="text-[10px] text-slate-400">Available on Demand</span>
+                )}
+              </div>
+              {selectedLead.coveredAreaSqFt ? (
+                <div className="text-[11px] text-slate-600 dark:text-slate-300 grid grid-cols-2 gap-2 p-2 bg-white/70 dark:bg-slate-900/70 rounded-lg border border-amber-200/60 dark:border-amber-800/40">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">Covered Area:</span>
+                    <span className="font-bold font-mono text-slate-800 dark:text-slate-200">
+                      {selectedLead.coveredAreaSqFt.toLocaleString()} sq. ft.
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">Quality Tier:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {selectedLead.constructionQuality || 'PREMIUM_A'}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setEstimatorLead(selectedLead);
+                  setEstimatorModalOpen(true);
+                }}
+                className="w-full text-xs font-bold text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 hover:bg-amber-50 dark:hover:bg-slate-800 gap-1.5 shadow-2xs"
+              >
+                <Calculator className="w-3.5 h-3.5 text-amber-500" />
+                {selectedLead.serviceCategory && selectedLead.serviceCategory !== 'PROPERTY_PURCHASE'
+                  ? 'Open Cost Estimator & WhatsApp Quote'
+                  : 'Calculate Construction Estimate for Client'}
+              </Button>
             </div>
 
             {/* Quick Action Contact Buttons */}
@@ -1678,7 +1893,7 @@ function LeadsPageContent() {
       <Modal
         isOpen={createLeadModalOpen}
         onClose={() => setCreateLeadModalOpen(false)}
-        title="Add Inbound Lead"
+        title="Add Inbound Lead / Construction Inquiry"
       >
         <form onSubmit={handleCreateLead} className="space-y-4 text-xs">
           <Input
@@ -1695,8 +1910,22 @@ function LeadsPageContent() {
             onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
             placeholder="03001234567"
           />
+
+          {/* Service Category Selector */}
           <Select
-            label="Preferred Society"
+            label="Primary Requirement / Service Category *"
+            value={newLead.serviceCategory}
+            onChange={(e) => setNewLead({ ...newLead, serviceCategory: e.target.value })}
+          >
+            <option value="PROPERTY_PURCHASE">🏡 Property Purchase &amp; Resale</option>
+            <option value="CONSTRUCTION_TURNKEY">🏗️ Turnkey Construction (Complete A/A+ Finishing)</option>
+            <option value="CONSTRUCTION_GREY_STRUCTURE">🧱 Grey Structure Construction (Civil Structure Only)</option>
+            <option value="RENOVATION_INTERIOR">🎨 Renovation &amp; Interior Remodeling</option>
+            <option value="ARCHITECTURAL_DESIGN">📐 Architectural Design &amp; Approvals</option>
+          </Select>
+
+          <Select
+            label="Target Society / Location"
             value={newLead.preferredSociety}
             onChange={(e) => setNewLead({ ...newLead, preferredSociety: e.target.value })}
           >
@@ -1704,9 +1933,92 @@ function LeadsPageContent() {
             <option value="New City Paradise">New City Paradise</option>
             <option value="DHA Phase 2">DHA Phase 2</option>
             <option value="Bahria Town Phase 8">Bahria Town Phase 8</option>
+            <option value="Faisal Hills">Faisal Hills</option>
+            <option value="Gulberg Greens">Gulberg Greens</option>
+            <option value="Other / Islamabad-Rawalpindi">Other / Islamabad-Rawalpindi</option>
           </Select>
+
+          {/* Construction Specific Fields */}
+          {newLead.serviceCategory !== 'PROPERTY_PURCHASE' ? (
+            <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 space-y-3">
+              <span className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 text-[11px]">
+                <Hammer className="w-3.5 h-3.5 text-amber-500" /> Construction Parameters &amp; Area
+              </span>
+
+              <div>
+                <label className="text-slate-500 text-[10px] block mb-1">Standard Plot Size Presets:</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {PLOT_SIZE_PRESETS.slice(0, 4).map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() =>
+                        setNewLead({
+                          ...newLead,
+                          preferredSize: p.label.split(' ')[0] + ' ' + p.label.split(' ')[1],
+                          coveredAreaSqFt: p.typicalCoveredAreaSqFt.toString(),
+                        })
+                      }
+                      className={`p-1.5 rounded-lg text-center text-[10px] font-bold border transition-all ${
+                        newLead.coveredAreaSqFt === p.typicalCoveredAreaSqFt.toString()
+                          ? 'bg-amber-500 text-white border-amber-600 shadow-2xs'
+                          : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-amber-300'
+                      }`}
+                    >
+                      <div>{p.label.split(' ')[0]} {p.label.split(' ')[1]}</div>
+                      <div className="text-[9px] opacity-80">{p.typicalCoveredAreaSqFt.toLocaleString()} sqft</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label="Covered Area (Sq. Ft.) *"
+                  type="number"
+                  value={newLead.coveredAreaSqFt}
+                  onChange={(e) => setNewLead({ ...newLead, coveredAreaSqFt: e.target.value })}
+                  placeholder="2200"
+                />
+
+                <Select
+                  label="Quality Specification Tier"
+                  value={newLead.constructionQuality}
+                  onChange={(e) => setNewLead({ ...newLead, constructionQuality: e.target.value })}
+                >
+                  <option value="STANDARD">Standard Finish (B+ Grade)</option>
+                  <option value="PREMIUM_A">Premium Finish (A Grade - Recommended)</option>
+                  <option value="LUXURY_A_PLUS">Luxury Executive (A+ Super Grade)</option>
+                </Select>
+              </div>
+
+              {/* Live Cost Estimation Preview */}
+              {(() => {
+                const sqft = parseFloat(newLead.coveredAreaSqFt) || 2200;
+                const est = calculateConstructionEstimate(
+                  newLead.serviceCategory as ServiceCategory,
+                  sqft,
+                  (newLead.constructionQuality as ConstructionQuality) || 'PREMIUM_A'
+                );
+                return (
+                  <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-amber-300/80 dark:border-amber-700/60 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Estimated Project Cost:</span>
+                      <span className="text-xs font-black text-amber-700 dark:text-amber-300 font-mono">
+                        {formatPKR(est.totalEstimatedCost)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      PKR {est.ratePerSqFt.toLocaleString()} / sqft ({est.estimatedTimelineMonths} mo)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          ) : null}
+
           <Input
-            label="Max Budget (PKR)"
+            label="Client's Target Budget (PKR)"
             type="number"
             value={newLead.budgetMax}
             onChange={(e) => setNewLead({ ...newLead, budgetMax: e.target.value })}
@@ -1741,7 +2053,7 @@ function LeadsPageContent() {
               Cancel
             </Button>
             <Button type="submit" className="bg-brand-600 hover:bg-brand-500 text-white">
-              Save Lead & Process Intake
+              Save Lead &amp; Process Intake
             </Button>
           </div>
         </form>
@@ -1788,7 +2100,7 @@ function LeadsPageContent() {
               Cancel
             </Button>
             <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
-              Register Verified Buyer & KYC
+              Register Verified Buyer &amp; KYC
             </Button>
           </div>
         </form>
@@ -1803,6 +2115,22 @@ function LeadsPageContent() {
         }}
         lead={leadToDisqualify}
         onDisqualified={handleDisqualifySuccess}
+      />
+
+      {/* Construction Estimator & Quotation Modal */}
+      <ConstructionEstimatorModal
+        isOpen={estimatorModalOpen}
+        onClose={() => {
+          setEstimatorModalOpen(false);
+          setEstimatorLead(null);
+        }}
+        lead={estimatorLead}
+        onSaved={(updatedLead) => {
+          if (selectedLead?.id === updatedLead.id) {
+            setSelectedLead(updatedLead);
+          }
+          fetchAllContactsData();
+        }}
       />
     </div>
   );

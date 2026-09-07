@@ -197,6 +197,10 @@ model Lead {
   disqualifiedById   String?
   nurtureBucket      String?     // AFFORDABLE_PROJECTS, LONG_TERM_90D, RENTAL_PARTNER, JUNK_EXCLUSION, BROKER_NETWORK, GENERAL_ARCHIVE
   isArchived         Boolean     @default(false)
+  serviceCategory    String?     @default("PROPERTY_PURCHASE") // PROPERTY_PURCHASE, CONSTRUCTION_TURNKEY, CONSTRUCTION_GREY_STRUCTURE, RENOVATION_INTERIOR, ARCHITECTURAL_DESIGN
+  coveredAreaSqFt    Float?
+  constructionQuality String?    // STANDARD, PREMIUM_A, LUXURY_A_PLUS
+  estimatedConstructionCost Float?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 

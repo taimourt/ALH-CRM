@@ -36,9 +36,12 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
     name: '',
     phone: '',
     source: 'WHATSAPP',
+    serviceCategory: 'PROPERTY_PURCHASE',
     preferredType: 'HOUSE',
     preferredSize: '10 MARLA',
     preferredSociety: 'Kohistan Enclave',
+    coveredAreaSqFt: '2200',
+    constructionQuality: 'PREMIUM_A',
     budgetMax: '32000000',
   });
 
@@ -51,6 +54,8 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
     visitDate: '',
     notes: '',
   });
+
+  const isConstructionService = leadData.serviceCategory !== 'PROPERTY_PURCHASE';
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +71,8 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...leadData,
+          coveredAreaSqFt: isConstructionService ? parseFloat(leadData.coveredAreaSqFt) || 2200 : null,
+          constructionQuality: isConstructionService ? leadData.constructionQuality : null,
           budgetMax: parseFloat(leadData.budgetMax) || null,
         }),
       });
@@ -153,8 +160,8 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
 
       {/* Quick Lead Form */}
       {tab === 'lead' && (
-        <form onSubmit={handleCreateLead} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleCreateLead} className="space-y-4 text-xs">
+          <div className="grid grid-cols-2 gap-3">
             <Input
               label="Client Name *"
               placeholder="e.g. Chaudhry Kamran"
@@ -171,24 +178,72 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          {/* Service Category Selector */}
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Service Required / Lead Category *
+            </label>
             <Select
-              label="Looking For"
-              value={leadData.preferredType}
-              onChange={(e) => setLeadData({ ...leadData, preferredType: e.target.value })}
+              value={leadData.serviceCategory}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLeadData({
+                  ...leadData,
+                  serviceCategory: val,
+                  preferredType: val === 'PROPERTY_PURCHASE' ? 'RESIDENTIAL_PLOT' : 'HOUSE',
+                });
+              }}
             >
-              <option value="HOUSE">House / Villa</option>
-              <option value="RESIDENTIAL_PLOT">Residential Plot</option>
-              <option value="COMMERCIAL">Commercial Shop/Plaza</option>
-              <option value="FARMHOUSE">Farmhouse</option>
-              <option value="APARTMENT">Apartment / Flat</option>
-              <option value="FILE">Plot File</option>
+              <option value="PROPERTY_PURCHASE">🏡 Real Estate Purchase / Plot / Ready Villa</option>
+              <option value="CONSTRUCTION_TURNKEY">🏗️ Turnkey House Construction (Full Contract)</option>
+              <option value="CONSTRUCTION_GREY_STRUCTURE">🧱 Grey Structure Contracting</option>
+              <option value="RENOVATION_INTERIOR">🎨 Renovation & Interior Remodeling</option>
+              <option value="ARCHITECTURAL_DESIGN">📐 Architectural Design & CDA/RDA Vetting</option>
             </Select>
+          </div>
 
+          {isConstructionService && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+              <span className="font-bold text-[11px] text-amber-700 dark:text-amber-300 block">
+                🏗️ Construction Project Specifications:
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Covered Area (Sq. Ft.) *"
+                  type="number"
+                  step="50"
+                  placeholder="e.g. 2200 for 5 Marla, 5500 for 1 Kanal"
+                  value={leadData.coveredAreaSqFt}
+                  onChange={(e) => setLeadData({ ...leadData, coveredAreaSqFt: e.target.value })}
+                  required
+                />
+                <Select
+                  label="Construction Quality Tier"
+                  value={leadData.constructionQuality}
+                  onChange={(e) => setLeadData({ ...leadData, constructionQuality: e.target.value })}
+                >
+                  <option value="STANDARD">Standard Grade-A</option>
+                  <option value="PREMIUM_A">Executive A-Quality</option>
+                  <option value="LUXURY_A_PLUS">Ultra-Luxury A+ Signature</option>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Select
-              label="Preferred Size"
+              label="Property Size / Plot Size"
               value={leadData.preferredSize}
-              onChange={(e) => setLeadData({ ...leadData, preferredSize: e.target.value })}
+              onChange={(e) => {
+                const size = e.target.value;
+                let defaultArea = leadData.coveredAreaSqFt;
+                if (size === '5 MARLA') defaultArea = '2200';
+                else if (size === '7 MARLA') defaultArea = '2800';
+                else if (size === '10 MARLA') defaultArea = '3300';
+                else if (size === '1 KANAL') defaultArea = '5500';
+                else if (size === '2 KANAL') defaultArea = '10000';
+                setLeadData({ ...leadData, preferredSize: size, coveredAreaSqFt: defaultArea });
+              }}
             >
               <option value="5 MARLA">5 Marla</option>
               <option value="7 MARLA">7 Marla</option>
@@ -199,7 +254,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
             </Select>
 
             <Select
-              label="Preferred Society"
+              label="Society / Location"
               value={leadData.preferredSociety}
               onChange={(e) => setLeadData({ ...leadData, preferredSociety: e.target.value })}
             >
@@ -209,17 +264,9 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
                 </option>
               ))}
             </Select>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Client Maximum Budget (PKR)"
-              placeholder="e.g. 32000000"
-              value={leadData.budgetMax}
-              onChange={(e) => setLeadData({ ...leadData, budgetMax: e.target.value })}
-            />
             <Select
-              label="Lead Inflow Source"
+              label="Inflow Source"
               value={leadData.source}
               onChange={(e) => setLeadData({ ...leadData, source: e.target.value })}
             >
@@ -231,6 +278,15 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
               <option value="REFERRAL">Client Referral</option>
               <option value="ZAMEEN">Zameen.com</option>
             </Select>
+          </div>
+
+          <div>
+            <Input
+              label="Client Maximum Budget / Project Value (PKR)"
+              placeholder="e.g. 32000000"
+              value={leadData.budgetMax}
+              onChange={(e) => setLeadData({ ...leadData, budgetMax: e.target.value })}
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">

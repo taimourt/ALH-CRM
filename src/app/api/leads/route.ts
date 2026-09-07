@@ -11,10 +11,17 @@ export async function GET(request: Request) {
   const archived = searchParams.get('archived');
   const nurtureBucket = searchParams.get('nurtureBucket');
   const reason = searchParams.get('reason');
+  const serviceCategory = searchParams.get('serviceCategory');
 
   try {
     const user = await getCurrentUser();
     const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+
+    const categoryCondition = serviceCategory && serviceCategory !== 'ALL'
+      ? serviceCategory === 'CONSTRUCTION'
+        ? { serviceCategory: { in: ['CONSTRUCTION_TURNKEY', 'CONSTRUCTION_GREY_STRUCTURE', 'RENOVATION_INTERIOR', 'ARCHITECTURAL_DESIGN'] } }
+        : { serviceCategory }
+      : {};
 
     const whereConditions: any = {
       ...(stage ? { stage: stage as any } : {}),
@@ -25,6 +32,7 @@ export async function GET(request: Request) {
         : { isArchived: false, NOT: { stage: 'DISQUALIFIED' } }),
       ...(nurtureBucket && nurtureBucket !== 'ALL' ? { nurtureBucket } : {}),
       ...(reason && reason !== 'ALL' ? { disqualifiedReason: reason } : {}),
+      ...categoryCondition,
       ...(isAgentOnly && user
         ? {
             OR: [
@@ -82,12 +90,16 @@ export async function POST(request: Request) {
         stage: body.stage || 'NEW',
         source: body.source || 'WEBSITE',
         score: body.score || 70,
-        budgetMin: body.budgetMin || null,
-        budgetMax: body.budgetMax || null,
+        budgetMin: body.budgetMin ? parseFloat(body.budgetMin) : null,
+        budgetMax: body.budgetMax ? parseFloat(body.budgetMax) : null,
         preferredType: body.preferredType || 'RESIDENTIAL_PLOT',
         preferredSize: body.preferredSize || '10 MARLA',
         preferredSociety: body.preferredSociety || 'Kohistan Enclave',
         notes: body.notes || null,
+        serviceCategory: body.serviceCategory || 'PROPERTY_PURCHASE',
+        coveredAreaSqFt: body.coveredAreaSqFt ? parseFloat(body.coveredAreaSqFt) : null,
+        constructionQuality: body.constructionQuality || null,
+        estimatedConstructionCost: body.estimatedConstructionCost ? parseFloat(body.estimatedConstructionCost) : null,
         assignedAgentId: initialAgentId,
         assignedAt: initialAgentId ? new Date() : null,
         slaStatus: 'ON_TRACK',
@@ -128,7 +140,7 @@ export async function PATCH(request: Request) {
     const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
 
     const body = await request.json();
-    const { id, stage, notes, assignedAgentId } = body;
+    const { id, stage, notes, assignedAgentId, serviceCategory, coveredAreaSqFt, constructionQuality, estimatedConstructionCost, budgetMin, budgetMax, preferredSociety, preferredSize, preferredType } = body;
 
     const existingLead = await prisma.lead.findUnique({ where: { id } });
     if (!existingLead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
@@ -153,6 +165,15 @@ export async function PATCH(request: Request) {
       data: {
         ...(stage ? { stage } : {}),
         ...(notes !== undefined ? { notes } : {}),
+        ...(serviceCategory !== undefined ? { serviceCategory } : {}),
+        ...(coveredAreaSqFt !== undefined ? { coveredAreaSqFt: coveredAreaSqFt ? parseFloat(coveredAreaSqFt) : null } : {}),
+        ...(constructionQuality !== undefined ? { constructionQuality } : {}),
+        ...(estimatedConstructionCost !== undefined ? { estimatedConstructionCost: estimatedConstructionCost ? parseFloat(estimatedConstructionCost) : null } : {}),
+        ...(budgetMin !== undefined ? { budgetMin: budgetMin ? parseFloat(budgetMin) : null } : {}),
+        ...(budgetMax !== undefined ? { budgetMax: budgetMax ? parseFloat(budgetMax) : null } : {}),
+        ...(preferredSociety !== undefined ? { preferredSociety } : {}),
+        ...(preferredSize !== undefined ? { preferredSize } : {}),
+        ...(preferredType !== undefined ? { preferredType } : {}),
         ...agentUpdateData,
         ...(isContactStage ? { lastContactedAt: new Date(), slaStatus: 'ON_TRACK' } : {}),
       },

@@ -26,6 +26,7 @@ import {
   FolderArchive,
   ShieldCheck,
   Share2,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRBAC } from '@/contexts/rbac-context';
@@ -39,18 +40,13 @@ export function Sidebar() {
   const allNavItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Contacts & Leads', href: '/leads', icon: Users, badge: 'HOT' },
-    { label: 'Properties & Inventory', href: '/properties', icon: Building2 },
+    { label: 'Properties & Inventory', href: '/dashboard/inventory', icon: Building2 },
     { label: 'Deals', href: '/deals', icon: TrendingUp },
     { label: 'Site Visits', href: '/site-visits', icon: CalendarCheck },
     { label: 'Agents', href: '/agents', icon: UserCheck },
     { label: 'Tasks', href: '/tasks', icon: CheckSquare },
-    { label: 'Communications', href: '/communications', icon: MessageSquare },
-    { label: 'Documents', href: '/documents', icon: FolderArchive },
-    { label: 'Payments', href: '/payments', icon: CreditCard },
-    { label: 'Commissions', href: '/commissions', icon: Percent },
-    { label: 'Marketing', href: '/marketing', icon: Megaphone },
-    { label: 'API & Integrations', href: '/settings/integrations', icon: Share2, badge: 'NEW' },
-    { label: 'Reports', href: '/analytics', icon: BarChart3 },
+    { label: 'Omnichannel Inbox', href: '/dashboard/inbox', icon: MessageSquare, badge: 'LIVE' },
+    { label: 'AI Knowledge Base', href: '/dashboard/knowledge', icon: BookOpen, badge: 'AI' },
     { label: 'AI Assistant', href: '/ai-assistant', icon: Sparkles, highlight: true },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];

@@ -3,7 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['images.unsplash.com', 'avatar.vercel.sh'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'avatar.vercel.sh' },
+      { protocol: 'https', hostname: 'img.youtube.com' },
+    ],
   },
 };
 

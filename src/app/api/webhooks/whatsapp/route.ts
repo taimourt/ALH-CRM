@@ -1,71 +1,65 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { createCRMNotification } from '@/lib/notifications';
+import { processIncomingChannelMessage } from '@/lib/ai/conversation-gateway';
 
-// GET: Meta Webhook Verification
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'asad_land_holdings_wa_verify_2026';
+
+// WhatsApp Cloud API Webhook Verification Endpoint (GET)
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
   const mode = searchParams.get('hub.mode');
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  const verifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'asad_crm_whatsapp_verify_token_2026';
-
-  if (mode === 'subscribe' && token === verifyToken) {
-    return new NextResponse(challenge, { status: 200 });
+  if (mode && token) {
+    if (mode === 'subscribe' && token === WHATSAPP_VERIFY_TOKEN) {
+      console.log('[WhatsApp Webhook] Verification successful');
+      return new Response(challenge, { status: 200 });
+    }
+    return new Response('Forbidden: Verification token mismatch', { status: 403 });
   }
 
-  return new NextResponse('Forbidden', { status: 403 });
+  return new Response('Bad Request', { status: 400 });
 }
 
-// POST: Incoming Webhook Event
-export async function POST(request: Request) {
+// WhatsApp Inbound Message Handler (POST)
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
 
     const entry = body.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
-    const message = value?.messages?.[0];
 
-    if (message) {
-      const fromPhone = message.from;
-      const textBody = message.text?.body || 'Inbound media message';
+    if (value && value.messages && value.messages.length > 0) {
+      const message = value.messages[0];
+      const contact = value.contacts?.[0];
 
-      // Find matching lead or customer by phone
-      const lead = await prisma.lead.findFirst({
-        where: { phone: { contains: fromPhone.slice(-10) } },
-      });
+      if (message.type === 'text' && message.text?.body) {
+        const fromPhone = message.from; // Phone number e.g. "923005123456"
+        const formattedPhone = fromPhone.startsWith('+') ? fromPhone : `+${fromPhone}`;
+        const senderName = contact?.profile?.name || formattedPhone;
+        const textBody = message.text.body;
 
-      const comm = await prisma.communication.create({
-        data: {
-          type: 'WHATSAPP',
+        console.log(`[WhatsApp API] Inbound from ${formattedPhone} (${senderName}): "${textBody}"`);
+
+        const conversation = await processIncomingChannelMessage({
           channel: 'WHATSAPP',
-          direction: 'INBOUND',
-          summary: `Inbound WhatsApp from +${fromPhone}`,
-          messageText: textBody,
-          status: 'READ',
-          leadId: lead?.id || null,
-          agentId: lead?.assignedAgentId || 'system',
-        },
-      });
+          senderId: formattedPhone,
+          phone: formattedPhone,
+          senderName,
+          text: textBody,
+        });
 
-      // Dispatch Notification to Agent and Management
-      await createCRMNotification({
-        userIds: lead?.assignedAgentId ? [lead.assignedAgentId] : [],
-        notifyManagement: true,
-        title: `💬 Inbound WhatsApp: ${lead?.name || `+${fromPhone}`}`,
-        message: textBody.substring(0, 70),
-        type: 'COMMUNICATION',
-        link: '/communications',
-      });
+        console.log(`[WhatsApp API] Gateway response for ${conversation.id}:`, conversation.lastMessageText);
+      }
 
-      console.log('[WHATSAPP WEBHOOK] Logged inbound message:', comm.id);
+      return NextResponse.json({ status: 'SUCCESS' }, { status: 200 });
     }
 
-    return NextResponse.json({ status: 'EVENT_RECEIVED' });
+    // Handles message status updates (e.g. delivered, read) silently
+    return NextResponse.json({ status: 'EVENT_IGNORED' }, { status: 200 });
   } catch (error) {
-    console.error('WhatsApp Webhook error:', error);
-    return NextResponse.json({ status: 'ERROR' }, { status: 500 });
+    console.error('Error in /api/webhooks/whatsapp:', error);
+    return NextResponse.json({ error: 'WhatsApp Webhook processing failed' }, { status: 500 });
   }
 }

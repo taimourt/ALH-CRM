@@ -138,6 +138,8 @@ export const ROUTE_PERMISSION_MAP: Record<string, PermissionString | PermissionS
   '/marketing': ['reports.view', 'leads.export'],
   '/analytics': 'reports.view',
   '/ai-assistant': 'ai.use',
+  '/dashboard/inbox': 'leads.view',
+  '/dashboard/knowledge': 'ai.use',
   '/settings': 'settings.manage',
   '/settings/users': 'users.view',
   '/settings/roles': 'settings.manage',

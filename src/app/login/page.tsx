@@ -368,6 +368,52 @@ function LoginForm() {
         </Button>
       </form>
 
+      {/* Quick Admin Credentials Helper */}
+      <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
+        <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+          <span className="flex items-center gap-1.5 text-slate-300">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            Quick Admin Sign-In:
+          </span>
+          <span className="text-[10px] font-mono text-slate-500">1-Click Autofill</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-left">
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('admin@asadlandholdings.com');
+              setPassword('admin123');
+            }}
+            className="p-2.5 rounded-lg bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition-all text-left group"
+          >
+            <div className="text-[11px] font-bold text-slate-200 group-hover:text-amber-400 transition-colors flex items-center justify-between">
+              <span>Super Admin</span>
+              <span className="text-[9px] px-1 py-0.2 bg-amber-500/20 text-amber-400 rounded font-mono">MD</span>
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono truncate mt-0.5">
+              admin@asadlandholdings.com
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('asad@asadlandholdings.com');
+              setPassword('admin123');
+            }}
+            className="p-2.5 rounded-lg bg-slate-950/80 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition-all text-left group"
+          >
+            <div className="text-[11px] font-bold text-slate-200 group-hover:text-emerald-400 transition-colors flex items-center justify-between">
+              <span>Asad Ali (MD)</span>
+              <span className="text-[9px] px-1 py-0.2 bg-emerald-500/20 text-emerald-400 rounded font-mono">CEO</span>
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono truncate mt-0.5">
+              asad@asadlandholdings.com
+            </div>
+          </button>
+        </div>
+      </div>
     </Card>
   );
 }

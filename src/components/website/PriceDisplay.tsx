@@ -44,15 +44,15 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   return (
     <div className={`inline-flex flex-col ${className}`}>
       {showLabel && (
-        <span className="text-[10px] uppercase font-mono tracking-widest text-[#666666]">
+        <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 dark:text-slate-300">
           Real Demand Rate
         </span>
       )}
-      <span className={`font-mono tracking-tight text-[#000000] dark:text-[#FEFEFE] ${sizeClasses[size]}`}>
+      <span className={`font-mono tracking-tight text-inherit ${sizeClasses[size]}`}>
         {mainPrice}
       </span>
       {isForeign && (
-        <span className="text-[10px] font-mono text-[#777777]">
+        <span className="text-[10px] font-mono text-slate-400 dark:text-slate-300">
           ≈ {pkrEquivalent}
         </span>
       )}

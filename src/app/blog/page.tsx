@@ -85,7 +85,7 @@ export default function PublicBlogPage() {
           {/* Search Bar */}
           <div className="w-full md:w-80">
             <div className="relative">
-              <Search className="w-4 h-4 text-[#888888] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#CCCCCC] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
                 placeholder="Search analysis, BOQ, NOC..."
@@ -133,7 +133,7 @@ export default function PublicBlogPage() {
             {/* Content */}
             <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-xs font-mono text-[#888888]">
+                <div className="flex items-center gap-3 text-xs font-mono text-[#CCCCCC]">
                   <span className="text-[#000000] font-semibold uppercase">{featuredPost.category}</span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
@@ -163,7 +163,7 @@ export default function PublicBlogPage() {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-[#000000]">{featuredPost.author?.name}</div>
-                    <div className="text-[10px] text-[#888888]">{featuredPost.author?.role}</div>
+                    <div className="text-[10px] text-[#CCCCCC]">{featuredPost.author?.role}</div>
                   </div>
                 </div>
 
@@ -201,7 +201,7 @@ export default function PublicBlogPage() {
                   </div>
 
                   {/* Meta */}
-                  <div className="flex items-center gap-3 text-[11px] font-mono text-[#888888]">
+                  <div className="flex items-center gap-3 text-[11px] font-mono text-[#CCCCCC]">
                     <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
@@ -221,7 +221,7 @@ export default function PublicBlogPage() {
 
                 {/* Footer */}
                 <div className="pt-4 border-t border-[#E5E5E5] flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-[#888888]">
+                  <span className="text-[11px] text-[#CCCCCC]">
                     By <strong>{post.author?.name || 'Asad Ali'}</strong>
                   </span>
                   <Link
@@ -236,7 +236,7 @@ export default function PublicBlogPage() {
           </div>
         ) : (
           <div className="py-16 text-center border border-dashed border-[#CCCCCC] p-8 space-y-3">
-            <BookOpen className="w-8 h-8 text-[#888888] mx-auto" />
+            <BookOpen className="w-8 h-8 text-[#CCCCCC] mx-auto" />
             <h3 className="text-base font-bold text-[#000000]">No articles found</h3>
             <p className="text-xs text-[#666666]">
               Try adjusting your search query or selecting a different category.
@@ -256,7 +256,7 @@ export default function PublicBlogPage() {
         {/* Newsletter & Direct Market Alert Subscription */}
         <div className="bg-[#000000] text-[#FEFEFE] p-8 sm:p-12 relative overflow-hidden">
           <div className="max-w-2xl space-y-4 relative z-10">
-            <div className="text-[11px] font-mono text-[#888888] uppercase tracking-widest">
+            <div className="text-[11px] font-mono text-[#CCCCCC] uppercase tracking-widest">
               Direct Broker Intelligence
             </div>
             <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -276,7 +276,7 @@ export default function PublicBlogPage() {
                 type="email"
                 placeholder="Enter your email address or WhatsApp..."
                 required
-                className="px-4 py-3 bg-[#111111] border border-[#333333] text-xs text-white placeholder:text-[#666666] outline-none flex-1 focus:border-white"
+                className="px-4 py-3 bg-[#111111] border border-[#333333] text-xs text-white placeholder:text-[#A3A3A3] outline-none flex-1 focus:border-white"
               />
               <button
                 type="submit"

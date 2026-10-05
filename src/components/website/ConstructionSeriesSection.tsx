@@ -112,7 +112,7 @@ export const ConstructionSeriesSection: React.FC<ConstructionSeriesSectionProps>
             </Link>
 
             <a
-              href={`https://wa.me/923005123456?text=${whatsappMessage}`}
+              href={`https://wa.me/923218004186?text=${whatsappMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#20ba59] text-[#000000] text-xs font-mono font-black uppercase tracking-wider transition-colors shadow-lg"
@@ -245,7 +245,7 @@ export const ConstructionSeriesSection: React.FC<ConstructionSeriesSectionProps>
                   {filteredEpisodes.length}
                 </span>
               </div>
-              <span className="text-[10px] text-[#888888] font-mono">
+              <span className="text-[10px] text-[#CCCCCC] font-mono">
                 7 in view • Scroll ↓
               </span>
             </div>
@@ -304,7 +304,7 @@ export const ConstructionSeriesSection: React.FC<ConstructionSeriesSectionProps>
                       >
                         {ep.title}
                       </h4>
-                      <span className="text-[9px] text-[#777777] font-mono block truncate mt-0.5">
+                      <span className="text-[9px] text-[#CCCCCC] font-mono block truncate mt-0.5">
                         {ep.phase}
                       </span>
                     </div>
@@ -314,7 +314,7 @@ export const ConstructionSeriesSection: React.FC<ConstructionSeriesSectionProps>
             </div>
 
             {/* Playlist Footer Counter & Scroll indicator */}
-            <div className="p-2.5 bg-[#161616] border-t border-[#262626] flex items-center justify-between text-[10px] font-mono text-[#888888]">
+            <div className="p-2.5 bg-[#161616] border-t border-[#262626] flex items-center justify-between text-[10px] font-mono text-[#CCCCCC]">
               <span>Showing 7 of {filteredEpisodes.length} episodes</span>
               <span className="text-amber-400 font-bold">Scroll for more ↓</span>
             </div>
@@ -345,7 +345,7 @@ export const ConstructionSeriesSection: React.FC<ConstructionSeriesSectionProps>
                 <Calculator className="w-4 h-4" /> Calculate 2026 BOQ Rates
               </Link>
               <a
-                href={`https://wa.me/923005123456?text=${encodeURIComponent(
+                href={`https://wa.me/923218004186?text=${encodeURIComponent(
                   'Hello Asad Land Holdings, I watched the "Plot Say Ghar Tak" construction series and want to schedule an engineering meeting for turnkey house construction.'
                 )}`}
                 target="_blank"

@@ -49,7 +49,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
   const groundRooms = plan.roomDimensions.filter(r => r.floor === 'GROUND');
   const firstRooms = plan.roomDimensions.filter(r => r.floor === 'FIRST');
 
-  const whatsappInquiryUrl = `https://wa.me/923005123456?text=${encodeURIComponent(
+  const whatsappInquiryUrl = `https://wa.me/923218004186?text=${encodeURIComponent(
     `Hi Asad Land Holdings, I am reviewing the architectural floor plan for ${plan.title} (${plan.plotDimensions} - ${plan.totalCoveredAreaSqFt} SqFt). I would like to request CAD DWG drawings and a custom consultation with Engr. Hammad Khan.`
   )}`;
 
@@ -74,7 +74,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
               <span className="text-[10px] text-emerald-400 uppercase font-bold">
                 • {plan.totalCoveredAreaSqFt} SqFt Covered Area
               </span>
-              <span className="text-[10px] text-[#888888] uppercase hidden sm:inline">
+              <span className="text-[10px] text-[#CCCCCC] uppercase hidden sm:inline">
                 • {plan.styleLabel}
               </span>
             </div>
@@ -217,7 +217,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#262B38] text-[11px]">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-[#38BDF8]">GROUND FLOOR BLUEPRINT</span>
-                    <span className="text-[#888888]">({plan.plotDimensions})</span>
+                    <span className="text-[#CCCCCC]">({plan.plotDimensions})</span>
                   </div>
                   <span className="text-[10px] text-[#AAAAAA]">{plan.groundFloorCoveredAreaSqFt} SqFt Net</span>
                 </div>
@@ -312,7 +312,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#262B38] text-[11px]">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-[#059669]">FIRST FLOOR BLUEPRINT</span>
-                    <span className="text-[#888888]">({plan.plotDimensions})</span>
+                    <span className="text-[#CCCCCC]">({plan.plotDimensions})</span>
                   </div>
                   <span className="text-[10px] text-[#AAAAAA]">{plan.firstFloorCoveredAreaSqFt} SqFt Net</span>
                 </div>
@@ -351,7 +351,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
           )}
 
           {/* Bottom Canvas Notice */}
-          <div className="relative z-10 mt-3 pt-3 border-t border-[#1C202B] flex flex-wrap items-center justify-between text-[11px] text-[#888888]">
+          <div className="relative z-10 mt-3 pt-3 border-t border-[#1C202B] flex flex-wrap items-center justify-between text-[11px] text-[#CCCCCC]">
             <span className="flex items-center gap-1 text-emerald-400">
               <CheckCircle2 className="w-3.5 h-3.5" /> Cantonment Board & RDA Setback Bylaws Verified
             </span>
@@ -377,7 +377,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-[#AAAAAA] block">Grey Structure (A+ Grade):</span>
-                    <span className="text-[10px] text-[#666666]">PKR 2,450 / SqFt (Steel/Cement/Bricks)</span>
+                    <span className="text-[10px] text-[#CCCCCC]">PKR 2,450 / SqFt (Steel/Cement/Bricks)</span>
                   </div>
                   <span className="font-bold text-emerald-400">
                     <PriceDisplay amount={plan.boqCostEstimates.greyStructureTotalPKR} />
@@ -387,7 +387,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 <div className="flex items-center justify-between pt-2 border-t border-[#232836]">
                   <div>
                     <span className="text-[#AAAAAA] block">Premium Turnkey Complete:</span>
-                    <span className="text-[10px] text-[#666666]">PKR 4,600 / SqFt (Tiles, Ash Wood, Kitchens)</span>
+                    <span className="text-[10px] text-[#CCCCCC]">PKR 4,600 / SqFt (Tiles, Ash Wood, Kitchens)</span>
                   </div>
                   <span className="font-bold text-[#F59E0B]">
                     <PriceDisplay amount={plan.boqCostEstimates.premiumFinishingTotalPKR} />
@@ -397,7 +397,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 <div className="flex items-center justify-between pt-2 border-t border-[#232836]">
                   <div>
                     <span className="text-[#AAAAAA] block">Executive Signature Finish:</span>
-                    <span className="text-[10px] text-[#666666]">PKR 5,800 / SqFt (Spanish, Smart Home)</span>
+                    <span className="text-[10px] text-[#CCCCCC]">PKR 5,800 / SqFt (Spanish, Smart Home)</span>
                   </div>
                   <span className="font-bold text-[#38BDF8]">
                     <PriceDisplay amount={plan.boqCostEstimates.executiveSignatureTotalPKR} />
@@ -408,21 +408,21 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
 
             {/* Spatial & Ventilation Health Index */}
             <div className="p-4 bg-[#111318] border border-[#242835] mb-5">
-              <span className="text-[10px] uppercase text-[#888888] font-bold block mb-2">
+              <span className="text-[10px] uppercase text-[#CCCCCC] font-bold block mb-2">
                 Spatial & Natural Light Audit:
               </span>
 
               <div className="grid grid-cols-3 gap-2 text-center text-xs mb-3">
                 <div className="p-2 bg-[#171920] border border-[#272B38]">
-                  <span className="text-[9px] text-[#888888] block">Natural Light</span>
+                  <span className="text-[9px] text-[#CCCCCC] block">Natural Light</span>
                   <span className="font-black text-[#F59E0B]">{plan.spatialAnalysis.naturalLightScore}/10</span>
                 </div>
                 <div className="p-2 bg-[#171920] border border-[#272B38]">
-                  <span className="text-[9px] text-[#888888] block">Cross Vent.</span>
+                  <span className="text-[9px] text-[#CCCCCC] block">Cross Vent.</span>
                   <span className="font-black text-emerald-400">{plan.spatialAnalysis.crossVentilationScore}/10</span>
                 </div>
                 <div className="p-2 bg-[#171920] border border-[#272B38]">
-                  <span className="text-[9px] text-[#888888] block">Circulation</span>
+                  <span className="text-[9px] text-[#CCCCCC] block">Circulation</span>
                   <span className="font-black text-[#38BDF8]">{plan.spatialAnalysis.circulationEfficiencyPct}%</span>
                 </div>
               </div>
@@ -434,7 +434,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
 
             {/* Key Room Dimensions Breakdown */}
             <div>
-              <span className="text-[10px] uppercase text-[#888888] font-bold block mb-2">
+              <span className="text-[10px] uppercase text-[#CCCCCC] font-bold block mb-2">
                 Room Dimensions Table ({plan.roomDimensions.length} Key Spaces):
               </span>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
@@ -451,7 +451,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                   >
                     <div>
                       <span className="font-bold text-[11px] block">{room.roomName}</span>
-                      <span className="text-[9px] text-[#717D96]">{room.features.join(' • ')}</span>
+                      <span className="text-[9px] text-[#A0AEC0]">{room.features.join(' • ')}</span>
                     </div>
                     <span className="font-mono text-emerald-400 font-bold shrink-0">{room.dimensionFt}</span>
                   </div>
@@ -498,7 +498,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
               </div>
               <button
                 onClick={() => setPdfDownloadModal(false)}
-                className="p-1 hover:bg-[#262626] text-[#888888] hover:text-[#FEFEFE] transition-colors"
+                className="p-1 hover:bg-[#262626] text-[#CCCCCC] hover:text-[#FEFEFE] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -511,7 +511,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 </p>
 
                 <div>
-                  <label className="block text-[10px] uppercase text-[#888888] mb-1">Full Name:</label>
+                  <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1">Full Name:</label>
                   <input
                     type="text"
                     required
@@ -523,7 +523,7 @@ export function FloorPlanViewer({ plan, className = '' }: FloorPlanViewerProps) 
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase text-[#888888] mb-1">WhatsApp Mobile Number:</label>
+                  <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1">WhatsApp Mobile Number:</label>
                   <input
                     type="tel"
                     required

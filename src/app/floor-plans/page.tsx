@@ -82,24 +82,24 @@ export default function FloorPlansCatalogPage() {
             {/* Quick Metrics */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="p-4 bg-[#12151D] border border-[#262B3A]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Standard Cuttings</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Standard Cuttings</span>
                 <span className="text-lg font-bold text-[#FEFEFE]">5M, 8M, 10M, 1K</span>
                 <span className="text-[10px] text-emerald-400 block mt-1">100% Bylaws Compliant</span>
               </div>
               <div className="p-4 bg-[#12151D] border border-[#262B3A]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Dual Renders</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Dual Renders</span>
                 <span className="text-lg font-bold text-[#F59E0B]">3D + 2D CAD</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Ground & First Floor</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Ground & First Floor</span>
               </div>
               <div className="p-4 bg-[#12151D] border border-[#262B3A]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Turnkey BOQ</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Turnkey BOQ</span>
                 <span className="text-lg font-bold text-[#38BDF8]">Live Cost Est.</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Grey + Premium Finish</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Grey + Premium Finish</span>
               </div>
               <div className="p-4 bg-[#12151D] border border-[#262B3A]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">CAD Delivery</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">CAD Delivery</span>
                 <span className="text-lg font-bold text-emerald-400">PDF & DWG</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Instant WhatsApp dispatch</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Instant WhatsApp dispatch</span>
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function FloorPlansCatalogPage() {
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
-            <span className="text-[#888888] hidden sm:inline">Select Sample:</span>
+            <span className="text-[#CCCCCC] hidden sm:inline">Select Sample:</span>
             {floorPlans.map((p) => (
               <button
                 key={p.id}

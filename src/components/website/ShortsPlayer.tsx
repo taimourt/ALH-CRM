@@ -95,7 +95,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({
     }
   };
 
-  const whatsappUrl = `https://wa.me/923005123456?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/923218004186?text=${encodeURIComponent(
     `Hello Asad Land Holdings, I watched your video short: "${currentShort.title}" (https://youtube.com/shorts/${youtubeVideoId}) and want to enquire about property/construction rates.`
   )}`;
 
@@ -174,7 +174,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({
 
         {/* Bottom Metadata & Controls Overlay */}
         <div className="relative z-10 p-4 bg-gradient-to-t from-[#000000] via-[#000000]/90 to-transparent text-[#FEFEFE] font-sans pointer-events-auto">
-          <div className="flex items-center gap-2 mb-1.5 font-mono text-[10px] text-[#D0D0D0]">
+          <div className="flex items-center gap-2 mb-1.5 font-mono text-[10px] text-[#FEFEFE]">
             <MapPin className="w-3 h-3 text-[#FEFEFE]" />
             <span className="font-bold">{currentShort.society}</span>
           </div>
@@ -183,7 +183,7 @@ export const ShortsPlayer: React.FC<ShortsPlayerProps> = ({
             {currentShort.title}
           </h3>
 
-          <p className="text-[11px] text-[#A0A0A0] line-clamp-2 mb-3 leading-relaxed">
+          <p className="text-[11px] text-[#D4D4D4] line-clamp-2 mb-3 leading-relaxed">
             {currentShort.description}
           </p>
 

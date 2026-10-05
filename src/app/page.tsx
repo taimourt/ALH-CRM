@@ -319,21 +319,21 @@ export default function HomePage() {
           <div className="bg-[#111111] border border-[#333333] p-8 text-left font-mono max-w-3xl mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div>
-                <label className="block text-[10px] text-[#888888] uppercase mb-1">Target Location</label>
+                <label className="block text-[10px] text-[#CCCCCC] uppercase mb-1">Target Location</label>
                 <div className="p-3 bg-[#000000] border border-[#333333] text-xs text-[#FEFEFE]">
                   Wah Cantt / GT Road
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] text-[#888888] uppercase mb-1">Investment Goal</label>
+                <label className="block text-[10px] text-[#CCCCCC] uppercase mb-1">Investment Goal</label>
                 <div className="p-3 bg-[#000000] border border-[#333333] text-xs text-[#FEFEFE]">
                   Immediate House Build
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] text-[#888888] uppercase mb-1">Budget Horizon</label>
+                <label className="block text-[10px] text-[#CCCCCC] uppercase mb-1">Budget Horizon</label>
                 <div className="p-3 bg-[#000000] border border-[#333333] text-xs text-[#FEFEFE]">
                   PKR 1 Crore – 2 Crore
                 </div>
@@ -537,8 +537,18 @@ export default function HomePage() {
               </div>
 
               <div className="lg:col-span-4 flex justify-center">
-                <div className="w-48 h-48 border border-[#000000] p-2 bg-[#FEFEFE]">
-                  <AgentCard agent={AGENTS_DATA[0]} className="border-0 p-0 shadow-none bg-transparent" />
+                <div className="w-60 sm:w-64 aspect-[3/4] border-2 border-[#000000] p-2 bg-[#FEFEFE] shadow-xl">
+                  <div className="relative w-full h-full overflow-hidden bg-[#1A1A1A]">
+                    <img
+                      src="/images/founder-asad-ali.jpg"
+                      alt="Asad Ali — Founder & Managing Director"
+                      className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-[#000000]/85 text-white p-3 font-mono border-t border-[#333333] backdrop-blur-sm">
+                      <p className="font-bold text-xs uppercase tracking-tight">Asad Ali</p>
+                      <p className="text-[#BDBDBD] text-[9px] uppercase tracking-wider">Founder & Managing Director</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

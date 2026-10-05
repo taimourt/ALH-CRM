@@ -451,7 +451,7 @@ export const PROPERTIES_DATA: PropertyItem[] = [
     isHotInvestment: true,
     createdDate: '2026-09-10',
     agentName: 'Asad Ali',
-    agentPhone: '+923005123456',
+    agentPhone: '+923218004186',
   },
   {
     id: 'prop-2',
@@ -537,7 +537,7 @@ export const PROPERTIES_DATA: PropertyItem[] = [
     isHotInvestment: true,
     createdDate: '2026-09-14',
     agentName: 'Asad Ali',
-    agentPhone: '+923005123456',
+    agentPhone: '+923218004186',
   },
   {
     id: 'prop-4',
@@ -577,7 +577,7 @@ export const PROPERTIES_DATA: PropertyItem[] = [
     isHotInvestment: true,
     createdDate: '2026-09-15',
     agentName: 'Asad Ali',
-    agentPhone: '+923005123456',
+    agentPhone: '+923218004186',
   },
   {
     id: 'prop-5',
@@ -737,13 +737,13 @@ export const AGENTS_DATA: AgentItem[] = [
     id: 'agent-1',
     name: 'Asad Ali',
     role: 'Founder & Managing Director',
-    phone: '+92 300 5123456',
-    whatsapp: '923005123456',
+    phone: '+92 321 8004186',
+    whatsapp: '923218004186',
     email: 'asad@asadlandholdings.com',
     specialization: 'Investment Advisory & High-Value Commercial Land',
     experienceYears: 14,
     bio: 'Founder of Asad Land Holdings with over 14 years of direct transaction experience in Wah Cantt, Taxila, and Islamabad real estate. Committed to transparent pricing and verified title deeds.',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
+    image: '/images/founder-asad-headshot.jpg',
   },
   {
     id: 'agent-2',

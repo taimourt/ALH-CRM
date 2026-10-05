@@ -9,7 +9,7 @@ import { MapPin, Phone, Mail, MessageSquare, Clock, CheckCircle2 } from 'lucide-
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
-  const whatsappUrl = 'https://wa.me/923005123456?text=Hello%20Asad%20Land%20Holdings,%20I%20am%20reaching%20out%20from%20the%20contact%20page.';
+  const whatsappUrl = 'https://wa.me/923218004186?text=Hello%20Asad%20Land%20Holdings,%20I%20am%20reaching%20out%20from%20the%20contact%20page.';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +64,7 @@ export default function ContactPage() {
                     <input
                       type="tel"
                       required
-                      placeholder="+92 300 5123456"
+                      placeholder="+92 321 8004186"
                       className="w-full bg-[#FEFEFE] border border-[#000000] p-3 text-[#000000] rounded-none focus:outline-none"
                     />
                   </div>
@@ -120,7 +120,7 @@ export default function ContactPage() {
                 <MapPin className="w-4 h-4 text-[#000000] shrink-0 mt-1" />
                 <div>
                   <strong className="text-[#000000] block">Main Office Address:</strong>
-                  <span>Main GT Road, Near Kohistan Enclave Gate, Wah Cantt, Punjab 47040</span>
+                  <span>Shop no 3, Hassan Heights, F Block, Wah Cantt, 47040</span>
                 </div>
               </li>
 
@@ -128,7 +128,7 @@ export default function ContactPage() {
                 <Phone className="w-4 h-4 text-[#000000] shrink-0 mt-1" />
                 <div>
                   <strong className="text-[#000000] block">Phone Direct Line:</strong>
-                  <a href="tel:+923005123456" className="hover:underline">+92 300 5123456</a>
+                  <a href="tel:+923218004186" className="hover:underline">+92 321 8004186</a>
                 </div>
               </li>
 

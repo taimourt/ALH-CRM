@@ -68,7 +68,7 @@ export const AIChatWidget: React.FC = () => {
         {
           id: `err-${Date.now()}`,
           sender: 'AI',
-          text: 'Apologies, our advisory server is temporary updating. You can connect directly via WhatsApp: +92 300 5123456',
+          text: 'Apologies, our advisory server is temporary updating. You can connect directly via WhatsApp: +92 321 8004186',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);

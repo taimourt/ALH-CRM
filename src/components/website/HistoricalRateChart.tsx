@@ -112,12 +112,12 @@ export function HistoricalRateChart({
               <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-widest px-2.5 py-0.5 bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 font-bold">
                 <TrendingUp className="w-3 h-3" /> 5-Year Empirical Historical Rate Index
               </span>
-              <span className="text-[10px] text-[#888888] uppercase">
+              <span className="text-[10px] text-[#CCCCCC] uppercase">
                 • Registered Stamp Deeds vs. Classified Portals
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black tracking-tight text-[#FEFEFE]">
-              {activeIndex.societyName} <span className="text-[#888888] font-normal text-sm sm:text-base">({activeIndex.plotSizeLabel})</span>
+              {activeIndex.societyName} <span className="text-[#CCCCCC] font-normal text-sm sm:text-base">({activeIndex.plotSizeLabel})</span>
             </h3>
           </div>
 
@@ -128,7 +128,7 @@ export function HistoricalRateChart({
               className={`px-3 py-1 text-xs uppercase tracking-wider transition-all ${
                 selectedSocietySlug === 'kohistan-enclave-wah'
                   ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold shadow-sm'
-                  : 'text-[#AAAAAA] hover:text-[#FEFEFE]'
+                  : 'text-[#E0E0E0] hover:text-[#FEFEFE]'
               }`}
             >
               Kohistan Enclave
@@ -138,7 +138,7 @@ export function HistoricalRateChart({
               className={`px-3 py-1 text-xs uppercase tracking-wider transition-all ${
                 selectedSocietySlug === 'new-city-phase-2-wah'
                   ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold shadow-sm'
-                  : 'text-[#AAAAAA] hover:text-[#FEFEFE]'
+                  : 'text-[#E0E0E0] hover:text-[#FEFEFE]'
               }`}
             >
               New City Phase 2
@@ -148,7 +148,7 @@ export function HistoricalRateChart({
               className={`px-3 py-1 text-xs uppercase tracking-wider transition-all ${
                 selectedSocietySlug === 'multi-gardens-b17-islamabad'
                   ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold shadow-sm'
-                  : 'text-[#AAAAAA] hover:text-[#FEFEFE]'
+                  : 'text-[#E0E0E0] hover:text-[#FEFEFE]'
               }`}
             >
               Multi Gardens B-17
@@ -159,7 +159,7 @@ export function HistoricalRateChart({
         {/* Plot Size Category Filter Pills */}
         <div className="mt-4 pt-3 border-t border-[#22252E] flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10px] uppercase text-[#777777] mr-1">Plot Category:</span>
+            <span className="text-[10px] uppercase text-[#CCCCCC] mr-1">Plot Category:</span>
             {availableIndices.map((item) => {
               const isSelected = item.plotSize === selectedPlotSize;
               return (
@@ -169,7 +169,7 @@ export function HistoricalRateChart({
                   className={`px-2.5 py-1 text-xs border transition-colors ${
                     isSelected
                       ? 'bg-[#F59E0B] text-[#0A0A0A] font-bold border-[#F59E0B]'
-                      : 'bg-[#17191F] text-[#AAAAAA] border-[#2A2E38] hover:text-[#FEFEFE]'
+                      : 'bg-[#17191F] text-[#E0E0E0] border-[#2A2E38] hover:text-[#FEFEFE]'
                   }`}
                 >
                   {item.plotSize === '5_MARLA' ? '5 Marla' : item.plotSize === '10_MARLA' ? '10 Marla' : item.plotSize === '1_KANAL' ? '1 Kanal' : '4 Marla Commercial'}
@@ -322,11 +322,11 @@ export function HistoricalRateChart({
         <div className="lg:col-span-4 bg-[#14161B] p-5 border border-[#262A36] space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-[#22252E]">
             <div>
-              <span className="text-[10px] uppercase text-[#888888] block">Audited Fiscal Year</span>
+              <span className="text-[10px] uppercase text-[#CCCCCC] block">Audited Fiscal Year</span>
               <span className="text-xl font-black text-[#F59E0B]">{activeYearData.year} Transaction Benchmark</span>
             </div>
             <div className="text-right">
-              <span className="text-[9px] uppercase text-[#888888] block">Trade Volume</span>
+              <span className="text-[9px] uppercase text-[#CCCCCC] block">Trade Volume</span>
               <span className="text-xs font-bold text-emerald-400">{activeYearData.volumeDeals} Registered Deeds</span>
             </div>
           </div>
@@ -334,14 +334,14 @@ export function HistoricalRateChart({
           {/* Pricing Comparison */}
           <div className="space-y-2.5 text-xs">
             <div className="flex items-center justify-between p-2.5 bg-[#0D0F12] border border-[#1E212B]">
-              <span className="text-[#AAAAAA]">ALH Real Closing Rate:</span>
+              <span className="text-[#E0E0E0]">ALH Real Closing Rate:</span>
               <span className="font-bold text-emerald-400 text-sm">
                 <PriceDisplay amount={activeYearData.realTransactionRatePKR} />
               </span>
             </div>
 
             <div className="flex items-center justify-between p-2.5 bg-[#0D0F12] border border-[#1E212B]">
-              <span className="text-[#AAAAAA]">Speculative Portal Demand:</span>
+              <span className="text-[#E0E0E0]">Speculative Portal Demand:</span>
               <span className="font-bold text-red-400 line-through">
                 <PriceDisplay amount={activeYearData.portalAskingRatePKR} />
               </span>
@@ -372,27 +372,27 @@ export function HistoricalRateChart({
       {/* ------------------------------------------------------------------ */}
       <div className="p-4 sm:p-6 bg-[#111317] border-t border-[#22252E] grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div className="p-3 bg-[#171A21] border border-[#262A36]">
-          <span className="text-[10px] text-[#888888] uppercase block mb-1">5-Year Compound Growth</span>
+          <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">5-Year Compound Growth</span>
           <span className="text-lg font-black text-emerald-400">+{activeIndex.cagr5Year}% CAGR</span>
-          <span className="text-[10px] text-[#666666] block mt-0.5">Real on-ground capital gain</span>
+          <span className="text-[10px] text-[#BDBDBD] block mt-0.5">Real on-ground capital gain</span>
         </div>
 
         <div className="p-3 bg-[#171A21] border border-[#262A36]">
-          <span className="text-[10px] text-[#888888] uppercase block mb-1">Avg Direct Buyer Savings</span>
+          <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Avg Direct Buyer Savings</span>
           <div className="text-lg font-black text-[#F59E0B]">
             <PriceDisplay amount={activeIndex.averageBuyerSavingsPKR} />
           </div>
-          <span className="text-[10px] text-[#666666] block mt-0.5">Below speculative asking</span>
+          <span className="text-[10px] text-[#BDBDBD] block mt-0.5">Below speculative asking</span>
         </div>
 
         <div className="p-3 bg-[#171A21] border border-[#262A36]">
-          <span className="text-[10px] text-[#888888] uppercase block mb-1">Liquidity Velocity</span>
+          <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Liquidity Velocity</span>
           <span className="text-lg font-black text-[#38BDF8]">{activeIndex.liquidityScore} / 10</span>
-          <span className="text-[10px] text-[#666666] block mt-0.5">Instant plot resale absorption</span>
+          <span className="text-[10px] text-[#BDBDBD] block mt-0.5">Instant plot resale absorption</span>
         </div>
 
         <div className="p-3 bg-[#171A21] border border-[#262A36]">
-          <span className="text-[10px] text-[#888888] uppercase block mb-1">Verified Real Valuation</span>
+          <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Verified Real Valuation</span>
           <div className="text-lg font-black text-[#FEFEFE]">
             <PriceDisplay amount={activeIndex.currentAverageRealRatePKR} />
           </div>

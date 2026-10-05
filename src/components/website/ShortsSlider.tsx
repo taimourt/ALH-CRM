@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { SHORTS_DATA, ShortVideoItem } from '@/lib/shorts-data';
 import { ShortsPlayer } from './ShortsPlayer';
 import { trackEvent } from '@/lib/analytics';
-import {
-  Play,
-  Volume2,
-  VolumeX,
-  ChevronLeft,
-  ChevronRight,
+import { 
+  Play, 
+  Volume2, 
+  VolumeX, 
+  ChevronLeft, 
+  ChevronRight, 
   Maximize2,
   ExternalLink,
   Flame,
@@ -136,7 +136,7 @@ export const ShortsSlider: React.FC<ShortsSliderProps> = ({
               {title}
             </h2>
 
-            <p className="mt-2 text-xs sm:text-sm text-[#A0A0A0] max-w-2xl leading-relaxed font-sans">
+            <p className="mt-2 text-xs sm:text-sm text-[#CCCCCC] max-w-2xl leading-relaxed font-sans">
               {subtitle}
             </p>
           </div>
@@ -178,44 +178,42 @@ export const ShortsSlider: React.FC<ShortsSliderProps> = ({
           </div>
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar font-mono text-xs">
+        {/* Category Pills Strip */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 font-mono text-xs no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.key}
-              onClick={() => setActiveCategory(cat.key)}
-              className={`px-3.5 py-1.5 uppercase font-bold text-[11px] whitespace-nowrap transition-all border ${
+              onClick={() => {
+                setActiveCategory(cat.key);
+                if (sliderRef.current) sliderRef.current.scrollLeft = 0;
+              }}
+              className={`px-3.5 py-1.5 whitespace-nowrap uppercase tracking-wider text-xs transition-all border ${
                 activeCategory === cat.key
-                  ? 'bg-[#FEFEFE] text-[#000000] border-[#FEFEFE] shadow'
-                  : 'bg-[#141414] text-[#A0A0A0] border-[#2A2A2A] hover:border-[#444444] hover:text-[#FEFEFE]'
+                  ? 'bg-[#FEFEFE] text-[#000000] border-[#FEFEFE] font-bold shadow-md'
+                  : 'bg-[#141414] text-[#CCCCCC] border-[#2A2A2A] hover:text-[#FEFEFE] hover:border-[#444444]'
               }`}
             >
               {cat.label}
             </button>
           ))}
-          <span className="text-[10px] text-[#777777] font-mono ml-auto hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap">
-            <Sparkles className="w-3 h-3 text-yellow-500" />
-            Hover card to play preview
-          </span>
         </div>
 
-        {/* HORIZONTAL SCROLLABLE SLIDER */}
+        {/* Horizontal Carousel Track */}
         <div
           ref={sliderRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 pt-2 scroll-smooth no-scrollbar select-none"
-          style={{ scrollSnapType: 'x mandatory' }}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pb-4 pt-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {displayShorts.map((short, idx) => {
+          {displayShorts.map((short, index) => {
             const isHovered = hoveredVideoId === short.videoId;
 
             return (
               <div
                 key={short.id}
-                style={{ scrollSnapAlign: 'start' }}
+                onClick={() => openFullscreenShort(index)}
                 onMouseEnter={() => handleMouseEnter(short.videoId)}
                 onMouseLeave={handleMouseLeave}
-                onClick={() => openFullscreenShort(idx)}
-                className="group relative flex-shrink-0 w-[240px] sm:w-[270px] aspect-[9/16] bg-[#141414] border border-[#262626] hover:border-[#FEFEFE] shadow-2xl overflow-hidden cursor-pointer transition-all duration-300 transform hover:-translate-y-1"
+                className="group relative flex-shrink-0 w-[240px] sm:w-[260px] aspect-[9/16] bg-[#12141A] border border-[#262A36] hover:border-red-500/80 transition-all duration-300 snap-start overflow-hidden cursor-pointer shadow-xl"
               >
                 {/* 1. Static Thumbnail Layer */}
                 <img
@@ -292,12 +290,12 @@ export const ShortsSlider: React.FC<ShortsSliderProps> = ({
                 {/* 6. Bottom Metadata Overlay */}
                 <div className="absolute bottom-0 inset-x-0 p-3.5 z-30 text-[#FEFEFE] font-sans flex flex-col justify-end">
                   {/* Society & Tag badge */}
-                  <div className="flex items-center gap-1.5 mb-1.5 font-mono text-[9px] text-[#C0C0C0]">
-                    <span className="px-1.5 py-0.5 bg-[#1F1F1F] border border-[#333333] uppercase text-[#E0E0E0]">
+                  <div className="flex items-center gap-1.5 mb-1.5 font-mono text-[9px] text-[#E0E0E0]">
+                    <span className="px-1.5 py-0.5 bg-[#1F1F1F] border border-[#333333] uppercase text-[#FEFEFE] font-semibold">
                       {short.society}
                     </span>
-                    <span className="text-[#888888]">•</span>
-                    <span className="text-[#999999] truncate">{short.tag}</span>
+                    <span className="text-[#A3A3A3]">•</span>
+                    <span className="text-[#CCCCCC] truncate">{short.tag}</span>
                   </div>
 
                   {/* Short Title */}
@@ -306,12 +304,12 @@ export const ShortsSlider: React.FC<ShortsSliderProps> = ({
                   </h3>
 
                   {/* Quick Action Button on Hover */}
-                  <div className="mt-2.5 pt-2 border-t border-[#333333]/80 flex items-center justify-between font-mono text-[10px] text-[#A0A0A0]">
+                  <div className="mt-2.5 pt-2 border-t border-[#333333]/80 flex items-center justify-between font-mono text-[10px] text-[#CCCCCC]">
                     <span className="inline-flex items-center gap-1 text-[#FEFEFE] font-bold group-hover:underline">
                       <Maximize2 className="w-3 h-3" /> Full Video
                     </span>
                     <a
-                      href={`https://wa.me/923005123456?text=${encodeURIComponent(
+                      href={`https://wa.me/923218004186?text=${encodeURIComponent(
                         `Hello Asad Land Holdings, I watched your video short: "${short.title}" (https://youtube.com/shorts/${short.videoId}) and want to enquire about property/construction rates.`
                       )}`}
                       target="_blank"
@@ -329,7 +327,7 @@ export const ShortsSlider: React.FC<ShortsSliderProps> = ({
         </div>
 
         {/* Progress bar and view all link */}
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#222222] pt-4 font-mono text-xs text-[#888888]">
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#222222] pt-4 font-mono text-xs text-[#CCCCCC]">
           <div className="w-full sm:w-64 h-1 bg-[#1A1A1A] overflow-hidden">
             <div
               className="h-full bg-[#FEFEFE] transition-all duration-150"

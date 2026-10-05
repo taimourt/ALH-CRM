@@ -75,7 +75,7 @@ export default function PropertyDetailPage() {
     }
   };
 
-  const whatsappUrl = `https://wa.me/923005123456?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/923218004186?text=${encodeURIComponent(
     `Hello Asad Land Holdings, I am interested in property: ${property.title} (${property.slug}) listed at PKR ${property.demandPrice}`
   )}`;
 

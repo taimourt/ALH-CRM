@@ -12,11 +12,11 @@ export function generateOrganizationSchema() {
     logo: `${SITE_URL}/images/logo.png`,
     description: DEFAULT_DESCRIPTION,
     slogan: SITE_TAGLINE,
-    telephone: '+92-300-5123456',
+    telephone: '+92-321-8004186',
     email: 'info@asadlandholdings.com',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Main GT Road, Near Kohistan Enclave Gate',
+      streetAddress: 'Shop no 3, Hassan Heights, F Block',
       addressLocality: 'Wah Cantt',
       addressRegion: 'Punjab',
       postalCode: '47040',

@@ -155,7 +155,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+92 300 5123456"
+              placeholder="+92 321 8004186"
               className="w-full border border-[#000000] p-3 text-xs text-[#000000] rounded-none focus:outline-none font-mono"
             />
           </div>
@@ -192,7 +192,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
           <div className="text-center pt-2">
             <a
-              href={`https://wa.me/923005123456?text=${encodeURIComponent(
+              href={`https://wa.me/923218004186?text=${encodeURIComponent(
                 `Hello Asad Land Holdings, I am requesting details for: ${propertyTitle || societyName || 'Property Enquiry'}`
               )}`}
               target="_blank"

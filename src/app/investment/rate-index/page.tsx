@@ -54,24 +54,24 @@ export default function RateIndexPage() {
             {/* Metric Highlights */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="p-4 bg-[#12141A] border border-[#22252E]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Deed Integrity</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Deed Integrity</span>
                 <span className="text-lg font-bold text-emerald-400">100% Verified</span>
-                <span className="text-[10px] text-[#888888] block mt-1">DC & Cantt stamp registries</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">DC & Cantt stamp registries</span>
               </div>
               <div className="p-4 bg-[#12141A] border border-[#22252E]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Portal Hype Spread</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Portal Hype Spread</span>
                 <span className="text-lg font-bold text-red-400">+18% to +26%</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Artificial classified bubble</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Artificial classified bubble</span>
               </div>
               <div className="p-4 bg-[#12141A] border border-[#22252E]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Direct Savings</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Direct Savings</span>
                 <span className="text-lg font-bold text-[#F59E0B]">PKR 12L – 50L</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Per transaction average</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Per transaction average</span>
               </div>
               <div className="p-4 bg-[#12141A] border border-[#22252E]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Price Drop Alerts</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Price Drop Alerts</span>
                 <span className="text-lg font-bold text-[#38BDF8]">Instant Radar</span>
-                <span className="text-[10px] text-[#888888] block mt-1">SMS & WhatsApp triggers</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">SMS & WhatsApp triggers</span>
               </div>
             </div>
           </div>

@@ -75,7 +75,7 @@ export default function PublicBlogPostDetailPage() {
             <span className="px-3 py-1 bg-[#000000] text-[#FEFEFE] text-[10px] font-mono uppercase tracking-widest font-bold">
               {post.category}
             </span>
-            <span className="text-xs font-mono text-[#888888] flex items-center gap-1">
+            <span className="text-xs font-mono text-[#CCCCCC] flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> {post.readTimeMinutes} min read
             </span>
           </div>
@@ -101,12 +101,12 @@ export default function PublicBlogPostDetailPage() {
               </div>
               <div>
                 <div className="text-sm font-bold text-[#000000]">{post.author?.name}</div>
-                <div className="text-xs text-[#888888]">{post.author?.role}</div>
+                <div className="text-xs text-[#CCCCCC]">{post.author?.role}</div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-[#888888]">
+              <span className="text-xs font-mono text-[#CCCCCC]">
                 Published {new Date(post.publishedAt).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -146,7 +146,7 @@ export default function PublicBlogPostDetailPage() {
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
           <div className="pt-6 border-t border-[#E5E5E5] flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-mono uppercase text-[#888888]">Topics:</span>
+            <span className="text-xs font-mono uppercase text-[#CCCCCC]">Topics:</span>
             {post.tags.map((tag) => (
               <span
                 key={tag}
@@ -161,7 +161,7 @@ export default function PublicBlogPostDetailPage() {
         {/* Author Bio Box & Consultation CTA */}
         <div className="bg-[#000000] text-[#FEFEFE] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-[#222222]">
           <div className="space-y-2">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[#CCCCCC]">
               Direct Expert Consultation
             </div>
             <h3 className="text-xl font-bold">Have Questions About This Briefing?</h3>
@@ -183,7 +183,7 @@ export default function PublicBlogPostDetailPage() {
         {/* Related Verified Properties */}
         {relatedProperties.length > 0 && (
           <div className="space-y-4 pt-6 border-t border-[#E5E5E5]">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-[#888888]">
+            <h3 className="text-xs font-mono uppercase tracking-widest text-[#CCCCCC]">
               Verified Listings in Covered Societies
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -203,7 +203,7 @@ export default function PublicBlogPostDetailPage() {
                   </div>
                   <div className="flex flex-col justify-between overflow-hidden">
                     <div>
-                      <div className="text-[10px] font-mono text-[#888888] uppercase">{prop.society}</div>
+                      <div className="text-[10px] font-mono text-[#CCCCCC] uppercase">{prop.society}</div>
                       <h4 className="text-xs font-bold text-[#000000] truncate group-hover:underline">{prop.title}</h4>
                     </div>
                     <div className="text-xs font-bold text-[#000000]">
@@ -219,7 +219,7 @@ export default function PublicBlogPostDetailPage() {
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
           <div className="space-y-4 pt-6 border-t border-[#E5E5E5]">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-[#888888]">
+            <h3 className="text-xs font-mono uppercase tracking-widest text-[#CCCCCC]">
               More Market Briefings & Guides
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -229,11 +229,11 @@ export default function PublicBlogPostDetailPage() {
                   href={`/blog/${rPost.slug}`}
                   className="group block p-4 border border-[#E5E5E5] hover:border-[#000000] bg-white transition-colors space-y-2"
                 >
-                  <span className="text-[10px] font-mono uppercase text-[#888888]">{rPost.category}</span>
+                  <span className="text-[10px] font-mono uppercase text-[#CCCCCC]">{rPost.category}</span>
                   <h4 className="text-xs font-bold text-[#000000] line-clamp-2 group-hover:underline">
                     {rPost.title}
                   </h4>
-                  <span className="text-[11px] font-mono text-[#888888] block">
+                  <span className="text-[11px] font-mono text-[#CCCCCC] block">
                     {rPost.readTimeMinutes} min read →
                   </span>
                 </Link>

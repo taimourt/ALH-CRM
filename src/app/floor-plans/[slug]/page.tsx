@@ -67,7 +67,7 @@ export default function FloorPlanDetailPage() {
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Floor Plans Catalog
           </Link>
 
-          <span className="text-xs font-mono text-[#888888] uppercase">
+          <span className="text-xs font-mono text-[#CCCCCC] uppercase">
             Lead Architect: {plan.leadArchitect}
           </span>
         </div>
@@ -125,7 +125,7 @@ export default function FloorPlanDetailPage() {
                 <span className="text-[10px] text-[#F59E0B] uppercase font-bold flex items-center gap-1.5">
                   <Play className="w-3.5 h-3.5 fill-current" /> Linked &quot;Plot Say Ghar Tak&quot; Masterclass
                 </span>
-                <span className="text-[10px] text-[#888888] uppercase">
+                <span className="text-[10px] text-[#CCCCCC] uppercase">
                   Episode #{linkedEpisode.episodeNumber} • {linkedEpisode.duration}
                 </span>
               </div>
@@ -153,7 +153,7 @@ export default function FloorPlanDetailPage() {
               Architecture Lead
             </span>
             <h4 className="text-base font-bold text-[#FEFEFE]">{plan.leadArchitect}</h4>
-            <span className="text-[11px] text-[#888888] block mb-4">Asad Land Holdings Studio</span>
+            <span className="text-[11px] text-[#CCCCCC] block mb-4">Asad Land Holdings Studio</span>
 
             <p className="text-xs text-[#AAAAAA] font-sans leading-relaxed mb-6">
               {plan.architectRemarks}

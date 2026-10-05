@@ -67,7 +67,7 @@ export function PriceAlertSubscription({
     setIsSubmitted(true);
   };
 
-  const whatsappNotificationUrl = `https://wa.me/923005123456?text=${encodeURIComponent(
+  const whatsappNotificationUrl = `https://wa.me/923218004186?text=${encodeURIComponent(
     `Hi Asad Land Holdings, please register my Real-Rate Price Alert:\n- Target: ${plotSize} in ${getSocietyName(society)}\n- Alert Trigger: Below ${formatPKRPrice(targetPricePKR)}\n- Buyer: ${fullName} (${investorType})\n- Horizon: ${horizon}`
   )}`;
 
@@ -82,7 +82,7 @@ export function PriceAlertSubscription({
             <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-widest px-2.5 py-0.5 bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/40 font-bold">
               <BellRing className="w-3 h-3" /> Real-Rate Drop Radar
             </span>
-            <span className="text-[10px] text-[#888888] uppercase">
+            <span className="text-[10px] text-[#CCCCCC] uppercase">
               • Direct WhatsApp & SMS Instant Notification
             </span>
           </div>
@@ -101,7 +101,7 @@ export function PriceAlertSubscription({
       {/* 2. QUICK PRESET PILLS                                              */}
       {/* ------------------------------------------------------------------ */}
       <div className="my-6">
-        <span className="text-[10px] uppercase text-[#888888] block mb-2 font-bold">
+        <span className="text-[10px] uppercase text-[#CCCCCC] block mb-2 font-bold">
           ⚡ Popular Alert Presets (Click to Auto-Configure):
         </span>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -176,7 +176,7 @@ export function PriceAlertSubscription({
                   type="button"
                   onClick={() => setInvestorType('OVERSEAS')}
                   className={`py-1.5 text-[11px] uppercase transition-colors ${
-                    investorType === 'OVERSEAS' ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold' : 'text-[#888888]'
+                    investorType === 'OVERSEAS' ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold' : 'text-[#CCCCCC]'
                   }`}
                 >
                   Overseas (UK/US/Gulf)
@@ -185,7 +185,7 @@ export function PriceAlertSubscription({
                   type="button"
                   onClick={() => setInvestorType('RESIDENT')}
                   className={`py-1.5 text-[11px] uppercase transition-colors ${
-                    investorType === 'RESIDENT' ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold' : 'text-[#888888]'
+                    investorType === 'RESIDENT' ? 'bg-[#FEFEFE] text-[#0A0A0A] font-bold' : 'text-[#CCCCCC]'
                   }`}
                 >
                   Local Resident
@@ -201,7 +201,7 @@ export function PriceAlertSubscription({
                 Alert Trigger Threshold:
               </span>
               <div className="text-right">
-                <span className="text-[10px] text-[#888888] uppercase block">Notify me if plot drops below:</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block">Notify me if plot drops below:</span>
                 <span className="text-lg font-black text-[#F59E0B]">
                   <PriceDisplay amount={targetPricePKR} />
                 </span>
@@ -218,7 +218,7 @@ export function PriceAlertSubscription({
               className="w-full accent-[#F59E0B] cursor-pointer"
             />
 
-            <div className="flex items-center justify-between text-[10px] text-[#717D96] mt-2">
+            <div className="flex items-center justify-between text-[10px] text-[#A0AEC0] mt-2">
               <span>PKR 30 Lakh (Starter File)</span>
               <span>PKR 2.0 Crore</span>
               <span>PKR 4.5 Crore (Commercial / 1 Kanal)</span>
@@ -232,7 +232,7 @@ export function PriceAlertSubscription({
                 Your Full Name:
               </label>
               <div className="relative">
-                <User className="w-4 h-4 absolute left-3 top-3 text-[#666666]" />
+                <User className="w-4 h-4 absolute left-3 top-3 text-[#A0A0A0]" />
                 <input
                   type="text"
                   required
@@ -249,7 +249,7 @@ export function PriceAlertSubscription({
                 WhatsApp Phone Number:
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 absolute left-3 top-3 text-[#666666]" />
+                <Phone className="w-4 h-4 absolute left-3 top-3 text-[#A0A0A0]" />
                 <input
                   type="tel"
                   required
@@ -266,7 +266,7 @@ export function PriceAlertSubscription({
                 Email Address (Optional):
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-3 text-[#666666]" />
+                <Mail className="w-4 h-4 absolute left-3 top-3 text-[#A0A0A0]" />
                 <input
                   type="email"
                   placeholder="name@domain.com"
@@ -314,7 +314,7 @@ export function PriceAlertSubscription({
             <button
               type="button"
               onClick={() => setIsSubmitted(false)}
-              className="text-xs text-[#888888] hover:text-[#FEFEFE] underline"
+              className="text-xs text-[#CCCCCC] hover:text-[#FEFEFE] underline"
             >
               Set Another Price Alert
             </button>

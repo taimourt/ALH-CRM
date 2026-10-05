@@ -33,11 +33,21 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
   const isDashboardPage =
     pathname.startsWith('/dashboard') ||
-    pathname === '/agents' ||
-    pathname === '/leads' ||
-    pathname === '/deals' ||
-    pathname === '/site-visits' ||
-    pathname === '/tasks';
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/agents') ||
+    pathname.startsWith('/leads') ||
+    pathname.startsWith('/deals') ||
+    pathname.startsWith('/customers') ||
+    pathname.startsWith('/site-visits') ||
+    pathname.startsWith('/tasks') ||
+    pathname.startsWith('/communications') ||
+    pathname.startsWith('/documents') ||
+    pathname.startsWith('/payments') ||
+    pathname.startsWith('/commissions') ||
+    pathname.startsWith('/marketing') ||
+    pathname.startsWith('/analytics') ||
+    pathname.startsWith('/ai-assistant') ||
+    pathname.startsWith('/profile');
 
   // 0. Render WP-Admin standalone portal
   if (isWPAdminPage) {

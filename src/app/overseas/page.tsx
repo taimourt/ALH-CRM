@@ -97,7 +97,7 @@ export default function OverseasDeskPage() {
     });
   };
 
-  const whatsappConsultationUrl = `https://wa.me/923005123456?text=${encodeURIComponent(
+  const whatsappConsultationUrl = `https://wa.me/923218004186?text=${encodeURIComponent(
     `Hello Asad Land Holdings, I am an Overseas Pakistani investor (${clientCountry || 'Overseas'}). I want to schedule a 1-on-1 strategy video consultation with Managing Director Asad Ali.\n\n` +
     `• Topic: ${selectedTopic.replace('_', ' ')}\n` +
     `• My Timezone: ${selectedTimezone}\n` +
@@ -157,7 +157,7 @@ export default function OverseasDeskPage() {
 
           {/* Currency Live Switcher Banner */}
           <div className="pt-6 border-t border-[#262626] flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-            <div className="flex items-center gap-2 text-[#888888]">
+            <div className="flex items-center gap-2 text-[#CCCCCC]">
               <span>Viewing Global Real Rates In:</span>
               <CurrencySwitcher variant="dark" />
             </div>
@@ -185,7 +185,7 @@ export default function OverseasDeskPage() {
             <h3 className="font-bold text-sm uppercase text-[#000000] mb-2 font-sans">
               100% SBP RDA Compliance
             </h3>
-            <p className="text-[11px] text-[#666666] font-sans leading-relaxed">
+            <p className="text-[11px] text-[#CCCCCC] font-sans leading-relaxed">
               Official banking wire channels and Roshan Digital Account payments with full capital gains repatriation rights and FBR non-resident tax exemptions.
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function OverseasDeskPage() {
             <h3 className="font-bold text-sm uppercase text-[#000000] mb-2 font-sans">
               Embassy Power of Attorney
             </h3>
-            <p className="text-[11px] text-[#666666] font-sans leading-relaxed">
+            <p className="text-[11px] text-[#CCCCCC] font-sans leading-relaxed">
               End-to-end guidance for digital Nadra overseas POA and Pakistani High Commission attestation. Full title registry execution without traveling.
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function OverseasDeskPage() {
             <h3 className="font-bold text-sm uppercase text-[#000000] mb-2 font-sans">
               4K Drone Milestone Logs
             </h3>
-            <p className="text-[11px] text-[#666666] font-sans leading-relaxed">
+            <p className="text-[11px] text-[#CCCCCC] font-sans leading-relaxed">
               Bi-weekly 4K drone flyovers and 360° interior walkthroughs for turnkey house construction, showing exact rebar, concrete, and finishing progress.
             </p>
           </div>
@@ -236,7 +236,7 @@ export default function OverseasDeskPage() {
             <h3 className="font-bold text-sm uppercase text-[#000000] mb-2 font-sans">
               DHL Diplomatic Courier
             </h3>
-            <p className="text-[11px] text-[#666666] font-sans leading-relaxed">
+            <p className="text-[11px] text-[#CCCCCC] font-sans leading-relaxed">
               Original Cantt Board and RDA allotment letters, title registries, and completion certificates securely dispatched via tracked DHL express.
             </p>
           </div>
@@ -282,9 +282,9 @@ export default function OverseasDeskPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-[#141414] border border-[#2E2E2E] font-mono text-[11px] text-[#888888]">
+            <div className="p-4 bg-[#141414] border border-[#2E2E2E] font-mono text-[11px] text-[#CCCCCC]">
               <span className="text-amber-400 font-bold uppercase block mb-1">Direct Hotline:</span>
-              <span>WhatsApp / Call: +92 300 5123456</span>
+              <span>WhatsApp / Call: +92 321 8004186</span>
               <span className="block mt-0.5">Email: asad@asadlandholdings.com</span>
             </div>
           </div>
@@ -318,7 +318,7 @@ export default function OverseasDeskPage() {
                 
                 {/* 1. Timezone Selector */}
                 <div>
-                  <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                  <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                     1. Select Your Local Timezone
                   </label>
                   <select
@@ -336,7 +336,7 @@ export default function OverseasDeskPage() {
 
                 {/* 2. Consultation Topic */}
                 <div>
-                  <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                  <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                     2. Primary Investment Objective
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -353,7 +353,7 @@ export default function OverseasDeskPage() {
                         className={`p-2.5 text-left border transition-colors ${
                           selectedTopic === t.key
                             ? 'bg-[#222222] border-amber-400 text-amber-400 font-bold'
-                            : 'bg-[#0A0A0A] border-[#2A2A2A] text-[#888888] hover:border-[#444444]'
+                            : 'bg-[#0A0A0A] border-[#2A2A2A] text-[#CCCCCC] hover:border-[#444444]'
                         }`}
                       >
                         {t.label}
@@ -365,7 +365,7 @@ export default function OverseasDeskPage() {
                 {/* 3. Date & Time Slot */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       3. Preferred Date
                     </label>
                     <select
@@ -382,7 +382,7 @@ export default function OverseasDeskPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       Preferred Time Slot ({selectedTimezone})
                     </label>
                     <select
@@ -401,7 +401,7 @@ export default function OverseasDeskPage() {
                 {/* 4. Client Contact Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       Full Name *
                     </label>
                     <input
@@ -415,7 +415,7 @@ export default function OverseasDeskPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       Country of Residence *
                     </label>
                     <input
@@ -431,7 +431,7 @@ export default function OverseasDeskPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       WhatsApp Number (With Country Code) *
                     </label>
                     <input
@@ -445,7 +445,7 @@ export default function OverseasDeskPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase text-[#888888] mb-1.5 font-bold">
+                    <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1.5 font-bold">
                       Email Address
                     </label>
                     <input
@@ -496,7 +496,7 @@ export default function OverseasDeskPage() {
               className={`px-4 py-2.5 uppercase font-bold text-[11px] whitespace-nowrap transition-all border ${
                 activeLegalTab === tab.key
                   ? 'bg-[#000000] text-[#FEFEFE] border-[#000000]'
-                  : 'bg-[#F4F4F4] text-[#666666] border-[#E5E5E5] hover:border-[#000000] hover:text-[#000000]'
+                  : 'bg-[#F4F4F4] text-[#CCCCCC] border-[#E5E5E5] hover:border-[#000000] hover:text-[#000000]'
               }`}
             >
               {tab.label}
@@ -531,7 +531,7 @@ export default function OverseasDeskPage() {
             </div>
 
             <div className="lg:col-span-5 bg-[#F8F8F8] border border-[#E5E5E5] p-6 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-[#888888] block mb-3">
+              <span className="text-[10px] uppercase font-bold text-[#CCCCCC] block mb-3">
                 Approved Partner Banks in Wah / Islamabad:
               </span>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-[#000000] mb-4">
@@ -540,7 +540,7 @@ export default function OverseasDeskPage() {
                 <div className="p-2.5 bg-[#FEFEFE] border border-[#E5E5E5]">Standard Chartered</div>
                 <div className="p-2.5 bg-[#FEFEFE] border border-[#E5E5E5]">Bank Alfalah Roshan</div>
               </div>
-              <p className="text-[10px] text-[#666666] leading-relaxed">
+              <p className="text-[10px] text-[#CCCCCC] leading-relaxed">
                 Asad Land Holdings provides formal IBAN verification and milestone invoice billing so your foreign bank releases wires smoothly without compliance delays.
               </p>
             </div>
@@ -574,7 +574,7 @@ export default function OverseasDeskPage() {
             </div>
 
             <div className="lg:col-span-5 bg-[#F8F8F8] border border-[#E5E5E5] p-6 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-[#888888] block mb-2">
+              <span className="text-[10px] uppercase font-bold text-[#CCCCCC] block mb-2">
                 Required POA Checklist:
               </span>
               <ul className="space-y-1.5 text-[11px] text-[#444444] mb-4 list-disc pl-4 font-sans">
@@ -617,7 +617,7 @@ export default function OverseasDeskPage() {
             </div>
 
             <div className="lg:col-span-5 bg-[#F8F8F8] border border-[#E5E5E5] p-6 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-[#888888] block mb-2">
+              <span className="text-[10px] uppercase font-bold text-[#CCCCCC] block mb-2">
                 Transfer Timeline:
               </span>
               <div className="space-y-2 text-[11px] text-[#444444] font-sans mb-4">
@@ -665,10 +665,10 @@ export default function OverseasDeskPage() {
             </div>
 
             <div className="lg:col-span-5 bg-[#F8F8F8] border border-[#E5E5E5] p-6 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-[#888888] block mb-2">
+              <span className="text-[10px] uppercase font-bold text-[#CCCCCC] block mb-2">
                 Tax Optimization Advice:
               </span>
-              <p className="text-[11px] text-[#666666] font-sans leading-relaxed mb-4">
+              <p className="text-[11px] text-[#CCCCCC] font-sans leading-relaxed mb-4">
                 Our in-house corporate tax consultants provide capital gain tax calculations (FBR Section 37) to ensure maximum net yields in GBP, USD, or AED.
               </p>
               <a
@@ -690,20 +690,20 @@ export default function OverseasDeskPage() {
       <section className="py-12 bg-[#F8F8F8] border border-[#E5E5E5] p-6 sm:p-10 mb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase text-[#666666] mb-2 font-bold">
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase text-[#CCCCCC] mb-2 font-bold">
               <Flame className="w-3.5 h-3.5 text-red-600" />
               <span>PRE-VETTED OVERSEAS INVENTORY</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black uppercase text-[#000000] font-sans">
               Curated Real-Rate Investment Assets
             </h2>
-            <p className="text-xs text-[#666666] font-sans mt-1">
+            <p className="text-xs text-[#CCCCCC] font-sans mt-1">
               100% on-ground possessed land and turnkey villas in Wah Cantt and Islamabad with verified CDA/RDA clearance.
             </p>
           </div>
 
           <div className="flex items-center gap-2 mt-4 md:mt-0 font-mono text-xs">
-            <span className="text-[#888888]">Currency:</span>
+            <span className="text-[#CCCCCC]">Currency:</span>
             <CurrencySwitcher />
           </div>
         </div>
@@ -726,7 +726,7 @@ export default function OverseasDeskPage() {
                   </span>
                 </div>
 
-                <div className="text-[10px] font-mono uppercase text-[#666666] mb-1">
+                <div className="text-[10px] font-mono uppercase text-[#CCCCCC] mb-1">
                   {prop.sizeMarla} Marla • {prop.propertyType.replace('_', ' ')}
                 </div>
 
@@ -739,7 +739,7 @@ export default function OverseasDeskPage() {
 
               <div className="pt-4 border-t border-[#E5E5E5] flex items-end justify-between">
                 <div>
-                  <span className="text-[9px] font-mono text-[#888888] uppercase block">Demand Rate</span>
+                  <span className="text-[9px] font-mono text-[#CCCCCC] uppercase block">Demand Rate</span>
                   <PriceDisplay amount={prop.demandPrice} size="md" />
                 </div>
 
@@ -773,7 +773,7 @@ export default function OverseasDeskPage() {
 
             <div className="space-y-4 font-mono text-xs">
               <div>
-                <label className="block text-[10px] uppercase text-[#888888] mb-1">
+                <label className="block text-[10px] uppercase text-[#CCCCCC] mb-1">
                   Enter Allocation ({activeCurrencyConfig.code}):
                 </label>
                 <div className="flex items-center gap-2">
@@ -853,7 +853,7 @@ export default function OverseasDeskPage() {
             <h4 className="font-bold text-sm uppercase text-[#000000] font-mono mb-2">
               Can I purchase property in Pakistan if I hold foreign citizenship (e.g. British / American)?
             </h4>
-            <p className="text-[#666666] leading-relaxed">
+            <p className="text-[#CCCCCC] leading-relaxed">
               Yes. Holders of a National Identity Card for Overseas Pakistanis (NICOP) or Pakistan Origin Card (POC) have full, unrestricted constitutional rights to buy, sell, and own immovable residential and commercial property anywhere in Pakistan with zero foreign ownership restrictions.
             </p>
           </div>
@@ -862,7 +862,7 @@ export default function OverseasDeskPage() {
             <h4 className="font-bold text-sm uppercase text-[#000000] font-mono mb-2">
               Do I have to physically visit Pakistan to register the title deed?
             </h4>
-            <p className="text-[#666666] leading-relaxed">
+            <p className="text-[#CCCCCC] leading-relaxed">
               No. You can execute a legally verified Power of Attorney (POA) through your nearest Pakistani Embassy/Consulate or the Nadra digital e-POA portal. Our legal team will execute the transfer at the Cantonment Board or RDA registry and courier the original allotment letter to your overseas home address via DHL.
             </p>
           </div>
@@ -871,7 +871,7 @@ export default function OverseasDeskPage() {
             <h4 className="font-bold text-sm uppercase text-[#000000] font-mono mb-2">
               How are overseas construction milestones verified during building?
             </h4>
-            <p className="text-[#666666] leading-relaxed">
+            <p className="text-[#CCCCCC] leading-relaxed">
               Our civil engineering department provides bi-weekly 4K drone videos and detailed structural inspection logs for every stage (excavation, steel footings, slab casting, DPC moisture barrier, and interior finishing). You only release milestone funds after video verification.
             </p>
           </div>
@@ -880,7 +880,7 @@ export default function OverseasDeskPage() {
             <h4 className="font-bold text-sm uppercase text-[#000000] font-mono mb-2">
               What are the tax rates for overseas Pakistanis on property purchase?
             </h4>
-            <p className="text-[#666666] leading-relaxed">
+            <p className="text-[#CCCCCC] leading-relaxed">
               Non-resident Pakistanis who file an annual income tax return (or declare non-resident overseas status with FBR) pay the lowest 3% advance tax under Section 236K, rather than the punitive 12%+ non-filer penalty rate. ALH corporate tax consultants assist clients with active taxpayer registration.
             </p>
           </div>

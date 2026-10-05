@@ -4,7 +4,27 @@ import type { NextRequest } from 'next/server';
 const AUTH_COOKIE_NAME = 'alh_session_token';
 
 // Routes requiring authentication (CRM & Admin)
-const PROTECTED_PREFIXES = ['/dashboard', '/admin', '/api/crm', '/api/admin'];
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/admin',
+  '/api/crm',
+  '/api/admin',
+  '/agents',
+  '/leads',
+  '/deals',
+  '/customers',
+  '/site-visits',
+  '/tasks',
+  '/communications',
+  '/documents',
+  '/payments',
+  '/commissions',
+  '/marketing',
+  '/analytics',
+  '/ai-assistant',
+  '/profile',
+  '/settings',
+];
 
 // Auth pages
 const AUTH_PATHS = ['/login', '/forgot-password', '/reset-password'];
@@ -23,6 +43,11 @@ export function middleware(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt'
   ) {
+    return NextResponse.next();
+  }
+
+  // Allow public root URL (homepage) to render normally
+  if (pathname === '/') {
     return NextResponse.next();
   }
 

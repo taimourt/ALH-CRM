@@ -58,24 +58,24 @@ export default function MapExplorerPage() {
             {/* Quick Metrics Cards */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="p-4 bg-[#141414] border border-[#262626]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Coverage</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Coverage</span>
                 <span className="text-lg font-bold text-[#FEFEFE]">3 Mega Townships</span>
                 <span className="text-[10px] text-emerald-400 block mt-1">100% On-Ground Demarcated</span>
               </div>
               <div className="p-4 bg-[#141414] border border-[#262626]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Valuation Mode</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Valuation Mode</span>
                 <span className="text-lg font-bold text-[#F59E0B]">Live Multi-Currency</span>
-                <span className="text-[10px] text-[#888888] block mt-1">PKR, USD, GBP, AED, SAR</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">PKR, USD, GBP, AED, SAR</span>
               </div>
               <div className="p-4 bg-[#141414] border border-[#262626]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Utilities Audit</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Utilities Audit</span>
                 <span className="text-lg font-bold text-[#38BDF8]">6 Key Matrices</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Gas, Power, Fiber, Water</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Gas, Power, Fiber, Water</span>
               </div>
               <div className="p-4 bg-[#141414] border border-[#262626]">
-                <span className="text-[10px] text-[#888888] uppercase block mb-1">Ground Proof</span>
+                <span className="text-[10px] text-[#CCCCCC] uppercase block mb-1">Ground Proof</span>
                 <span className="text-lg font-bold text-red-400">48+ Tours</span>
-                <span className="text-[10px] text-[#888888] block mt-1">Linked Video Footage</span>
+                <span className="text-[10px] text-[#CCCCCC] block mt-1">Linked Video Footage</span>
               </div>
             </div>
           </div>

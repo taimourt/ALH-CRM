@@ -53,7 +53,7 @@ In this market briefing, **Asad Land Holdings** breaks down verified price indic
 
 For **immediate construction (within 3–6 months)**, Sector A and Sector B remain the undisputed choices. For **capital appreciation with lower entry capital**, Sector C boulevard-facing plots offer an estimated 16–22% annualized ROI before 2028 possession handover.
 
-> **Need verified on-ground inventory?** Contact Asad Land Holdings Kohistan Desk at +92 300 5123456 for registry-verified direct owner options.`,
+> **Need verified on-ground inventory?** Contact Asad Land Holdings Kohistan Desk at +92 321 8004186 for registry-verified direct owner options.`,
   },
   {
     id: 'post-2',
@@ -231,10 +231,10 @@ export const INITIAL_MATERIAL_RATES: CMSMaterialRates = {
 export const INITIAL_SETTINGS: CMSSettings = {
   siteTitle: 'Asad Land Holdings | Real Estate on Real Rates',
   tagline: 'Wah Cantt & Islamabad Premier Real Estate, Construction & Architectural Advisory',
-  phone: '+92 300 5123456',
-  whatsapp: '+923005123456',
+  phone: '+92 321 8004186',
+  whatsapp: '+923218004186',
   email: 'info@asadlandholdings.com',
-  address: 'Main Boulevard, Kohistan Enclave, GT Road, Wah Cantt, Punjab, Pakistan',
+  address: 'Shop no 3, Hassan Heights, F Block, Wah Cantt, 47040',
   officeHours: 'Monday – Saturday: 9:30 AM – 7:30 PM (Friday: Closed for Juma prayer 1-3 PM)',
   facebookUrl: 'https://facebook.com/asadlandholdings',
   youtubeUrl: 'https://youtube.com/@asadlandholdings',

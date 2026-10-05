@@ -57,7 +57,7 @@ export function FloorPlanCard({ plan, className = '' }: FloorPlanCardProps) {
           <h3 className="text-lg font-bold font-mono text-[#FEFEFE] group-hover:text-[#F59E0B] transition-colors line-clamp-1">
             {plan.title}
           </h3>
-          <p className="text-xs text-[#888888] font-sans line-clamp-2 mt-1">
+          <p className="text-xs text-[#CCCCCC] font-sans line-clamp-2 mt-1">
             {plan.subtitle}
           </p>
         </div>
@@ -81,7 +81,7 @@ export function FloorPlanCard({ plan, className = '' }: FloorPlanCardProps) {
         {/* Turnkey BOQ Estimate Banner */}
         <div className="p-3 bg-[#181B24] border border-[#292F3E] flex items-center justify-between font-mono">
           <div>
-            <span className="text-[9px] uppercase text-[#888888] block">Turnkey BOQ From:</span>
+            <span className="text-[9px] uppercase text-[#CCCCCC] block">Turnkey BOQ From:</span>
             <div className="text-sm font-black text-emerald-400">
               <PriceDisplay amount={plan.boqCostEstimates.premiumFinishingTotalPKR} />
             </div>

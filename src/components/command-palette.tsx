@@ -119,7 +119,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   <span>Lead Management & Pipeline</span>
                 </button>
                 <button
-                  onClick={() => navigateTo('/properties')}
+                  onClick={() => navigateTo('/dashboard/inventory')}
                   className="flex items-center gap-2.5 p-2.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                 >
                   <Home className="w-4 h-4 text-blue-500" />
@@ -194,7 +194,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   {results.properties.map((prop: any) => (
                     <button
                       key={prop.id}
-                      onClick={() => navigateTo(`/properties?id=${prop.id}`)}
+                      onClick={() => navigateTo(`/dashboard/inventory?id=${prop.id}`)}
                       className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left group"
                     >
                       <div className="flex items-center gap-3">

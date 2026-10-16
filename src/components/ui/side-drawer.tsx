@@ -50,37 +50,38 @@ export function SideDrawer({
         onClick={onClose}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div
           className={cn(
-            'w-screen border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200',
+            'w-screen max-w-full border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200',
             widthClasses[width]
           )}
         >
           {/* Header */}
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
+          <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="min-w-0 pr-2">
               {title && (
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
                   {title}
                 </h2>
               )}
               {description && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                   {description}
                 </p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="rounded-xl p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+              aria-label="Close drawer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Drawer Body */}
-          <div className="p-6 overflow-y-auto flex-1">{children}</div>
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
         </div>
       </div>
     </div>

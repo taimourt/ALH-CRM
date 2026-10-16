@@ -15,9 +15,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Find user in database
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // 1. Find user in database (case-insensitive so email casing never fails login)
+    const user = await prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+      },
     });
 
     if (!user) {
@@ -36,7 +38,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Check status
+    // 3. Check status & auto-activate invited accounts with valid credentials
+    if (user.status === 'INVITED' && user.password && user.password !== 'unassigned_password_hash') {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          status: 'ACTIVE',
+          invitationToken: null,
+          invitationExpiresAt: null,
+        },
+      });
+      user.status = 'ACTIVE';
+    }
+
     if (user.status !== 'ACTIVE') {
       return NextResponse.json(
         {
@@ -97,13 +111,13 @@ export async function POST(request: Request) {
       },
     });
 
-    // 8. Set secure HTTP-only cookie
+    // 8. Set secure HTTP-only cookie (30 days persistent)
     response.cookies.set(AUTH_COOKIE_NAME, session.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     // Also set a readable role/user cookie for client UI components
@@ -112,7 +126,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     return response;

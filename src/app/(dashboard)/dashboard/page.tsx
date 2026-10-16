@@ -448,13 +448,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-brand-900 via-slate-900 to-slate-950 text-white shadow-xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-brand-900 via-slate-900 to-slate-950 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-1">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold border border-brand-500/30">
             <Sparkles className="w-3.5 h-3.5" />
             {isSalesAgent ? 'Sales Agent Workstation' : 'Executive Operations & Revenue Safeguard'}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             {isSalesAgent
               ? `Welcome back, ${user?.name || 'Sales Agent'}!`
               : 'Executive Dashboard & Operations Shell'}
@@ -466,14 +466,14 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="relative z-10 flex items-center gap-3">
-          <Link href="/leads">
-            <Button className="bg-brand-500 hover:bg-brand-600 text-white font-semibold shadow-md">
+        <div className="relative z-10 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <Link href="/leads" className="w-full sm:w-auto flex-1 sm:flex-initial">
+            <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold shadow-md">
               <Users className="w-4 h-4 mr-1.5" /> {isSalesAgent ? 'My Assigned Leads' : 'Leads Pipeline'}
             </Button>
           </Link>
-          <Link href="/tasks">
-            <Button variant="outline" className="border-slate-700 text-slate-200 hover:bg-slate-800">
+          <Link href="/tasks" className="w-full sm:w-auto flex-1 sm:flex-initial">
+            <Button variant="outline" className="w-full border-slate-700 text-slate-200 hover:bg-slate-800">
               <CheckSquare className="w-4 h-4 mr-1.5 text-indigo-400" /> Tasks ({overdueTasks.length} Overdue)
             </Button>
           </Link>

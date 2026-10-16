@@ -370,7 +370,7 @@ function PropertiesPageContent() {
             <Select
               value={filterSociety}
               onChange={(e) => setFilterSociety(e.target.value)}
-              className="w-48 text-xs h-8"
+              className="w-full sm:w-48 text-xs h-8"
             >
               <option value="ALL">All Housing Societies</option>
               {societies.map((s) => (
@@ -389,7 +389,7 @@ function PropertiesPageContent() {
             <Select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-44 text-xs h-8"
+              className="w-full sm:w-44 text-xs h-8"
             >
               <option value="ALL">All Property Types</option>
               <option value="RESIDENTIAL_PLOT">Residential Plot</option>
@@ -401,7 +401,7 @@ function PropertiesPageContent() {
             <Select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-36 text-xs h-8"
+              className="w-full sm:w-36 text-xs h-8"
             >
               <option value="ALL">All Status</option>
               <option value="AVAILABLE">Available</option>

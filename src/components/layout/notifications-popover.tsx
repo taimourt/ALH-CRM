@@ -346,7 +346,7 @@ export function NotificationsPopover() {
 
       {/* Popover Card */}
       {isOpen && (
-        <div className="absolute right-0 mt-2.5 w-84 sm:w-[410px] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 flex flex-col">
+        <div className="fixed sm:absolute top-16 sm:top-auto left-2 right-2 sm:left-auto sm:right-0 mt-2 sm:mt-2.5 max-w-[calc(100vw-16px)] sm:w-[410px] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 flex flex-col">
           {/* Header */}
           <div className="p-3.5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 backdrop-blur-sm">
             <div className="flex items-center justify-between">

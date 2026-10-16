@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { createSessionToken, setSessionCookie } from '@/lib/auth';
+import { createSessionToken, setSessionCookie, hashPassword } from '@/lib/auth';
 import { recordAuditLog } from '@/lib/audit';
 
 // 1. Verify invitation token validity (GET)
@@ -79,11 +79,12 @@ export async function POST(request: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        password: password, // In production, bcrypt hash can be used
+        password: hashPassword(password),
         status: 'ACTIVE',
         invitationToken: null,
         invitationExpiresAt: null,
         lastLoginAt: new Date(),
+        passwordChangedAt: new Date(),
       },
     });
 

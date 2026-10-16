@@ -29,6 +29,7 @@ import {
   Check,
   Building2,
   Sliders,
+  Lock,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Select } from '@/components/ui/input';
 import { SideDrawer } from '@/components/ui/side-drawer';
 import { Modal } from '@/components/ui/modal';
+import { ResetPasswordModal } from '@/components/reset-password-modal';
 import { useToast } from '@/components/ui/toast';
 import { formatPKR, formatDate } from '@/lib/utils';
 import { PermissionGuard } from '@/components/auth/permission-guard';
@@ -81,6 +83,7 @@ export default function AgentsPage() {
   const [customTerritory, setCustomTerritory] = useState('');
   const [editMonthlyTarget, setEditMonthlyTarget] = useState('50000000');
   const [saving, setSaving] = useState(false);
+  const [passwordResetUser, setPasswordResetUser] = useState<any | null>(null);
 
   // Drawer inline edit state
   const [drawerEditing, setDrawerEditing] = useState(false);
@@ -538,15 +541,29 @@ export default function AgentsPage() {
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {canManageAgents && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => handleOpenEditModal(agent, e)}
-                              className="h-7 text-[11px] gap-1 px-2 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 border-brand-200 dark:border-brand-900/40"
-                              title="Edit Target & Territory"
-                            >
-                              <Edit className="w-3 h-3" /> Target
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPasswordResetUser(agent);
+                                }}
+                                className="h-7 text-[11px] gap-1 px-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 border-amber-200 dark:border-amber-900/40"
+                                title="Reset Agent Password"
+                              >
+                                <Lock className="w-3 h-3" /> Reset
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => handleOpenEditModal(agent, e)}
+                                className="h-7 text-[11px] gap-1 px-2 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 border-brand-200 dark:border-brand-900/40"
+                                title="Edit Target & Territory"
+                              >
+                                <Edit className="w-3 h-3" /> Target
+                              </Button>
+                            </>
                           )}
                           <button
                             onClick={(e) => {
@@ -739,6 +756,16 @@ export default function AgentsPage() {
               </div>
 
               {/* Quick Contact & Action Buttons */}
+              {canManageAgents && (
+                <Button
+                  onClick={() => setPasswordResetUser(selectedAgent)}
+                  variant="outline"
+                  className="w-full text-xs font-semibold gap-1.5 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 border-amber-300 dark:border-amber-800"
+                >
+                  <Lock className="w-4 h-4 text-amber-600" /> Reset Agent Password
+                </Button>
+              )}
+
               <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`https://wa.me/92${selectedAgent.phone?.replace(/^0/, '')}`}
@@ -866,6 +893,14 @@ export default function AgentsPage() {
             </form>
           )}
         </Modal>
+
+        {/* Admin Agent Password Reset Modal */}
+        <ResetPasswordModal
+          isOpen={!!passwordResetUser}
+          onClose={() => setPasswordResetUser(null)}
+          user={passwordResetUser}
+          onSuccess={fetchLeaderboardData}
+        />
       </div>
     </PermissionGuard>
   );

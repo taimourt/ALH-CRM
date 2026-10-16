@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { recordAuditLog } from '@/lib/audit';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hashPassword } from '@/lib/auth';
 
 export async function GET(
   request: Request,
@@ -91,6 +91,7 @@ export async function PATCH(
         ...(body.jobTitle !== undefined ? { jobTitle: body.jobTitle } : {}),
         ...(body.territory !== undefined && isAuthorized ? { territory: body.territory } : {}),
         ...(body.monthlyTarget !== undefined && isAuthorized ? { monthlyTarget: parseFloat(body.monthlyTarget) || 50000000 } : {}),
+        ...(body.password && isAuthorized ? { password: hashPassword(body.password), passwordChangedAt: new Date() } : {}),
       },
       include: {
         department: true,

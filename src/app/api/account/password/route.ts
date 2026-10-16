@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { recordAuditLog } from '@/lib/audit';
 import { queueAndSendEmail } from '@/lib/email-service';
+import { getCurrentUser, hashPassword, verifyPassword } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getCurrentUser();
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized: Please log in to change password.' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { userId, currentPassword, newPassword } = body;
 
@@ -12,51 +18,67 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'New password must be at least 6 characters' }, { status: 400 });
     }
 
-    // Default to Super Admin if userId not passed
-    const targetUserId = userId || 'user-1';
+    // Determine target user (self, or another user if Super Admin)
+    const targetUserId = (userId && authUser.role === 'SUPER_ADMIN') ? userId : authUser.id;
 
-    const user = await prisma.user.findFirst({
-      where: { OR: [{ id: targetUserId }, { role: 'SUPER_ADMIN' }] },
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
     });
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
-    // Update Password & Timestamp in DB
+    // Verify current password when user is changing their own password
+    if (targetUserId === authUser.id && currentPassword) {
+      const isCurrentValid = verifyPassword(currentPassword, targetUser.password);
+      if (!isCurrentValid) {
+        return NextResponse.json({ error: 'Current password is incorrect. Please check and try again.' }, { status: 400 });
+      }
+    }
+
+    // Update Password & Timestamp in DB with standard SHA-256 hash
+    const hashedPassword = hashPassword(newPassword);
+
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: targetUser.id },
       data: {
-        password: `hashed_${newPassword}`,
+        password: hashedPassword,
         passwordChangedAt: new Date(),
+        status: 'ACTIVE',
       },
     });
 
     // Record Audit Log
     await recordAuditLog({
-      actorId: user.id,
+      actorId: authUser.id,
       action: 'ACCOUNT_PASSWORD_CHANGED',
       targetType: 'USER',
-      targetId: user.id,
+      targetId: targetUser.id,
     });
 
     // Send Security Notification Email
-    await queueAndSendEmail(
-      'security-alert',
-      user.email,
-      {
-        first_name: user.firstName || user.name,
-        company_name: 'Asad Land Holdings',
-      },
-      '[SECURITY ALERT] Your CRM Password Was Successfully Changed'
-    );
+    try {
+      await queueAndSendEmail(
+        'security-alert',
+        targetUser.email,
+        {
+          first_name: targetUser.firstName || targetUser.name,
+          company_name: 'Asad Land Holdings',
+        },
+        '[SECURITY ALERT] Your CRM Password Was Successfully Changed'
+      );
+    } catch (e) {
+      // Non-blocking email alert
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Password updated successfully. Security confirmation email sent.',
+      message: 'Password updated successfully. You can now use your new password permanently.',
     });
   } catch (error) {
     console.error('Change password API error:', error);
     return NextResponse.json({ error: 'Failed to update password' }, { status: 500 });
   }
 }
+

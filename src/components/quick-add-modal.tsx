@@ -161,7 +161,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
       {/* Quick Lead Form */}
       {tab === 'lead' && (
         <form onSubmit={handleCreateLead} className="space-y-4 text-xs">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Client Name *"
               placeholder="e.g. Chaudhry Kamran"
@@ -207,7 +207,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
               <span className="font-bold text-[11px] text-amber-700 dark:text-amber-300 block">
                 🏗️ Construction Project Specifications:
               </span>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
                   label="Covered Area (Sq. Ft.) *"
                   type="number"
@@ -230,7 +230,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
             </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Select
               label="Property Size / Plot Size"
               value={leadData.preferredSize}
@@ -303,7 +303,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
       {/* Site Visit Form */}
       {tab === 'visit' && (
         <form onSubmit={handleCreateVisit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Client Name *"
               placeholder="e.g. Dr. Salman Qureshi"
@@ -319,7 +319,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Select
               label="Housing Society"
               value={visitData.societyName}
@@ -347,7 +347,7 @@ export function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddModalProps
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Visit Date & Time *"
               type="datetime-local"

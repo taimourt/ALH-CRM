@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input, Select } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { InvitationModal } from '@/components/invitation-modal';
+import { ResetPasswordModal } from '@/components/reset-password-modal';
 import { useToast } from '@/components/ui/toast';
 import { formatDate, formatDateTime, formatRelativeTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -65,6 +66,9 @@ export default function UsersPage() {
   // Generated Invitation Modal
   const [invitationModalOpen, setInvitationModalOpen] = useState(false);
   const [createdInvitationData, setCreatedInvitationData] = useState<any | null>(null);
+
+  // Reset Password Modal
+  const [passwordResetUser, setPasswordResetUser] = useState<any | null>(null);
 
   async function fetchUsers() {
     setLoading(true);
@@ -378,14 +382,25 @@ export default function UsersPage() {
                   <td className="p-3.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       {canCreateUser && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleResendInvitation(u)}
-                          className="text-[11px] h-7 gap-1 text-purple-600 hover:bg-purple-50"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" /> Invite Link
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPasswordResetUser(u)}
+                            className="text-[11px] h-7 gap-1 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 border-amber-200 dark:border-amber-800/40"
+                            title="Reset User Password"
+                          >
+                            <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> Reset
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResendInvitation(u)}
+                            className="text-[11px] h-7 gap-1 text-purple-600 hover:bg-purple-50"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" /> Invite Link
+                          </Button>
+                        </>
                       )}
 
                       <Link href={`/settings/users/${u.id}`}>
@@ -516,6 +531,14 @@ export default function UsersPage() {
           onResend={() => handleResendInvitation({ id: createdInvitationData.userId, email: createdInvitationData.email, name: createdInvitationData.name, role: createdInvitationData.role })}
         />
       )}
+
+      {/* Admin User Password Reset Modal */}
+      <ResetPasswordModal
+        isOpen={!!passwordResetUser}
+        onClose={() => setPasswordResetUser(null)}
+        user={passwordResetUser}
+        onSuccess={fetchUsers}
+      />
     </div>
   );
 }

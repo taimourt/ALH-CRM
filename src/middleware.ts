@@ -3,72 +3,64 @@ import type { NextRequest } from 'next/server';
 
 const AUTH_COOKIE_NAME = 'alh_session_token';
 
-// Routes requiring authentication (CRM & Admin)
-const PROTECTED_PREFIXES = [
-  '/dashboard',
-  '/admin',
-  '/api/crm',
-  '/api/admin',
-  '/agents',
-  '/leads',
-  '/deals',
-  '/customers',
-  '/site-visits',
-  '/tasks',
-  '/communications',
-  '/documents',
-  '/payments',
-  '/commissions',
-  '/marketing',
-  '/analytics',
-  '/ai-assistant',
-  '/profile',
-  '/settings',
+// Public paths that do not require authentication
+const PUBLIC_PATHS = [
+  '/login',
+  '/forgot-password',
+  '/reset-password',
+  '/manifest.webmanifest',
+  '/manifest.json',
+  '/sw.js',
+  '/offline.html',
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/api/auth/session',
+  '/api/website/leads',
 ];
-
-// Auth pages
-const AUTH_PATHS = ['/login', '/forgot-password', '/reset-password'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-  // 1. Allow static assets, Next internals, favicons, webhooks, and public API calls
+  // 1. Allow static files, Next internals, webhooks, public APIs
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/website') ||
     pathname.includes('.') ||
-    pathname === '/favicon.ico' ||
-    pathname === '/sitemap.xml' ||
-    pathname === '/robots.txt'
+    pathname === '/favicon.ico'
   ) {
     return NextResponse.next();
   }
 
-  // Allow public root URL (homepage) to render normally
+  // 2. Main root `/` should direct to CRM
   if (pathname === '/') {
-    return NextResponse.next();
+    if (token) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } else {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-  const isProtected = PROTECTED_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
-  const isAuthPage = AUTH_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`));
+  const isPublicPath = PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
-  // Redirect authenticated users away from login to dashboard
-  if (isAuthPage && token) {
+  // 3. If user is trying to access `/login` while already authenticated, send them to `/dashboard`
+  if (isPublicPath && token && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Redirect unauthenticated users attempting to access protected CRM/admin pages to login
-  if (isProtected && !token) {
+  // 4. If path is protected and user is not authenticated, redirect to `/login`
+  if (!isPublicPath && !token) {
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    if (pathname !== '/dashboard') {
+      loginUrl.searchParams.set('redirect', pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
-
 
 export const config = {
   matcher: [

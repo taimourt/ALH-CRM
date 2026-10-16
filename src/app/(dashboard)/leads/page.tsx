@@ -800,7 +800,7 @@ function LeadsPageContent() {
                     key={stage.id}
                     onDragOver={(e) => handleDragOver(e, stage.id)}
                     onDrop={(e) => handleDrop(e, stage.id)}
-                    className={`w-72 shrink-0 flex flex-col rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border transition-all duration-200 ${
+                    className={`w-[85vw] sm:w-72 shrink-0 snap-center flex flex-col rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border transition-all duration-200 ${
                       isOver
                         ? 'border-brand-500 bg-brand-500/5 ring-2 ring-brand-500/20'
                         : 'border-slate-200/80 dark:border-slate-800'
@@ -961,7 +961,8 @@ function LeadsPageContent() {
           ) : (
             /* Table View */
             <Card className="overflow-hidden border-slate-200 dark:border-slate-800">
-              <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[720px]">
                 <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                   <tr>
                     <th className="p-3.5">Lead Name</th>
@@ -1115,6 +1116,7 @@ function LeadsPageContent() {
                   })}
                 </tbody>
               </table>
+              </div>
             </Card>
           )}
         </>
@@ -1153,7 +1155,8 @@ function LeadsPageContent() {
 
           {/* Buyers Directory Table */}
           <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-sm">
-            <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left text-xs min-w-[720px]">
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="p-3.5">Verified Buyer Profile</th>
@@ -1245,6 +1248,7 @@ function LeadsPageContent() {
                 ))}
               </tbody>
             </table>
+            </div>
           </Card>
         </div>
       )}
@@ -1503,7 +1507,8 @@ function LeadsPageContent() {
 
           {/* Archived Leads Table */}
           <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-sm">
-            <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left text-xs min-w-[720px]">
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="p-3.5">Lead Name &amp; Phone</th>
@@ -1644,6 +1649,7 @@ function LeadsPageContent() {
                 })()}
               </tbody>
             </table>
+            </div>
           </Card>
         </div>
       )}

@@ -11,9 +11,9 @@ export function hashPassword(password: string): string {
 }
 
 export function verifyPassword(providedPassword: string, storedPasswordHash: string): boolean {
-  if (!storedPasswordHash) return false;
+  if (!storedPasswordHash || !providedPassword) return false;
 
-  // 1. Direct match with plain passwords in development/seeds
+  // 1. Direct match with plain passwords (legacy seed or unhashed inputs)
   if (providedPassword === storedPasswordHash) return true;
 
   // 2. Direct match with common initial seed passwords
@@ -26,7 +26,14 @@ export function verifyPassword(providedPassword: string, storedPasswordHash: str
     return true;
   }
 
-  // 3. SHA-256 match
+  // 3. Match with legacy 'hashed_' prefix (from prior account/password updates)
+  if (storedPasswordHash.startsWith('hashed_')) {
+    const rawAfterPrefix = storedPasswordHash.slice(7);
+    if (providedPassword === rawAfterPrefix) return true;
+    if (hashPassword(providedPassword) === rawAfterPrefix) return true;
+  }
+
+  // 4. Standard SHA-256 match
   const hashed = hashPassword(providedPassword);
   if (hashed === storedPasswordHash) return true;
 
@@ -35,7 +42,7 @@ export function verifyPassword(providedPassword: string, storedPasswordHash: str
 
 export async function createSession(userId: string, userAgent?: string, ipAddress?: string) {
   const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days persistent session
 
   // Automatically update lastLoginAt on the user whenever a new session is issued
   await prisma.user.update({
@@ -87,7 +94,7 @@ export function setSessionCookie(token: string) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
   } catch (e) {
     // cookies() may not be writable in some contexts
@@ -128,6 +135,15 @@ export async function getSessionUser(token?: string) {
       prisma.user.update({
         where: { id: session.user.id },
         data: { lastLoginAt: new Date() },
+      }).catch(() => {});
+    }
+
+    // Sliding window: If session expires in less than 15 days, extend by 30 days
+    const remainingMs = new Date(session.expiresAt).getTime() - Date.now();
+    if (remainingMs < 15 * 24 * 60 * 60 * 1000) {
+      prisma.userSession.update({
+        where: { id: session.id },
+        data: { expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
       }).catch(() => {});
     }
 

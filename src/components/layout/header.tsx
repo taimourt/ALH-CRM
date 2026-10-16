@@ -55,9 +55,11 @@ export function Header({
 
         {/* Mobile Brand Tag */}
         <div className="md:hidden flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-700 to-emerald-500 text-white flex items-center justify-center font-black text-[10px] shadow-xs">
-            ALH
-          </div>
+          <img
+            src="/icons/icon-72x72.png"
+            alt="ALH CRM Logo"
+            className="w-7 h-7 rounded-lg bg-white p-0.5 object-contain shadow-xs border border-slate-200 dark:border-slate-800"
+          />
           <span className="font-bold text-xs tracking-tight text-slate-900 dark:text-slate-100">
             CRM
           </span>

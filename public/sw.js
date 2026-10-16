@@ -1,4 +1,4 @@
-const CACHE_VERSION = "alh-crm-v1";
+const CACHE_VERSION = "alh-crm-v2";
 const STATIC_CACHE = `alh-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `alh-dynamic-${CACHE_VERSION}`;
 const API_CACHE = `alh-api-${CACHE_VERSION}`;

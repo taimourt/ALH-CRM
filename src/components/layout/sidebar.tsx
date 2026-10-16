@@ -136,9 +136,11 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               {/* Mobile Drawer Header */}
               <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-500 text-white flex items-center justify-center font-black text-xs shadow-md shrink-0">
-                    ALH
-                  </div>
+                  <img
+                    src="/icons/icon-96x96.png"
+                    alt="ALH CRM Logo"
+                    className="w-9 h-9 rounded-xl bg-white p-1 object-contain shadow-md shrink-0 border border-slate-200 dark:border-slate-800"
+                  />
                   <div className="flex flex-col truncate">
                     <span className="font-bold text-sm text-slate-900 dark:text-slate-100 tracking-tight leading-none">
                       ASAD LAND
@@ -204,9 +206,11 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         {/* Brand Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-700 to-emerald-500 text-white flex items-center justify-center font-black text-xs shadow-md shrink-0">
-              ALH
-            </div>
+            <img
+              src="/icons/icon-96x96.png"
+              alt="ALH CRM Logo"
+              className="w-9 h-9 rounded-xl bg-white p-1 object-contain shadow-md shrink-0 border border-slate-200 dark:border-slate-800"
+            />
             {!collapsed && (
               <div className="flex flex-col truncate">
                 <span className="font-bold text-sm text-slate-900 dark:text-slate-100 tracking-tight leading-none">

@@ -281,9 +281,11 @@ function LoginForm() {
     <Card className="w-full max-w-md p-8 border-slate-800 bg-slate-900/90 text-white shadow-2xl relative z-10 space-y-6 backdrop-blur-xl">
       {/* Logo & Header */}
       <div className="text-center space-y-2">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-black text-xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-950">
-          ALH
-        </div>
+        <img
+          src="/icons/icon-192x192.png"
+          alt="ALH CRM Logo"
+          className="w-16 h-16 rounded-2xl bg-white p-2 object-contain shadow-xl shadow-slate-950/60 mx-auto border border-slate-700/80"
+        />
         <h1 className="text-xl font-bold tracking-tight text-slate-100">
           ASAD LAND HOLDINGS
         </h1>

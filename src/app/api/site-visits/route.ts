@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 import { createCRMNotification } from '@/lib/notifications';
 
 export async function GET(request: Request) {
@@ -8,9 +9,21 @@ export async function GET(request: Request) {
   const agentId = searchParams.get('agentId');
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const whereConditions: any = {};
     if (status && status !== 'ALL') whereConditions.status = status;
-    if (agentId && agentId !== 'ALL') whereConditions.agentId = agentId;
+    if (isAgentOnly) {
+      whereConditions.agentId = user.id;
+    } else if (agentId && agentId !== 'ALL') {
+      whereConditions.agentId = agentId;
+    }
 
     const visits = await prisma.siteVisit.findMany({
       where: whereConditions,
@@ -31,13 +44,30 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await request.json();
+
+    if (isAgentOnly && body.leadId) {
+      const lead = await prisma.lead.findUnique({ where: { id: body.leadId } });
+      if (lead && lead.assignedAgentId !== user.id) {
+        return NextResponse.json({ error: 'Forbidden: You can only schedule visits for leads assigned to you' }, { status: 403 });
+      }
+    }
+
+    const targetAgentId = isAgentOnly ? user.id : (body.agentId || user.id);
 
     const newVisit = await prisma.siteVisit.create({
       data: {
         leadId: body.leadId,
         propertyId: body.propertyId,
-        agentId: body.agentId,
+        agentId: targetAgentId,
         scheduledAt: new Date(body.scheduledAt || Date.now()),
         status: body.status || 'SCHEDULED',
         notes: body.notes || null,
@@ -57,7 +87,7 @@ export async function POST(request: Request) {
         entityId: newVisit.id,
         action: 'VISIT_SCHEDULED',
         description: `Site visit scheduled for lead ${newVisit.lead.name} on ${newVisit.property.title}.`,
-        userId: body.agentId,
+        userId: targetAgentId,
       },
     });
 
@@ -80,8 +110,25 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await request.json();
     const { id, status, customerFeedback, interestLevel, nextAction, notes } = body;
+
+    const existingVisit = await prisma.siteVisit.findUnique({ where: { id } });
+    if (!existingVisit) {
+      return NextResponse.json({ error: 'Site visit not found' }, { status: 404 });
+    }
+
+    if (isAgentOnly && existingVisit.agentId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: You can only update your own site visits' }, { status: 403 });
+    }
 
     const updatedVisit = await prisma.siteVisit.update({
       where: { id },

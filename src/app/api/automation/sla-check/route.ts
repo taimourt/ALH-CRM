@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server';
 import { checkAndEnforce24hLeadSLA } from '@/lib/lead-assignment';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const pendingBreached = await prisma.lead.findMany({
       where: {
         stage: 'NEW',
-        assignedAgentId: { not: null },
+        assignedAgentId: isAgentOnly ? user.id : { not: null },
         assignedAt: { lt: twentyFourHoursAgo },
       },
       include: {
@@ -38,6 +47,18 @@ export async function GET() {
 
 export async function POST() {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAuthorized = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(userRole);
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Forbidden: Only management can trigger SLA redistribution' }, { status: 403 });
+    }
+
     const result = await checkAndEnforce24hLeadSLA();
     return NextResponse.json({
       success: true,
@@ -48,3 +69,4 @@ export async function POST() {
     return NextResponse.json({ error: error.message || 'SLA check execution failed' }, { status: 500 });
   }
 }
+

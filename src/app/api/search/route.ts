@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,15 +11,38 @@ export async function GET(request: Request) {
   }
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
+    const leadWhere: any = {
+      OR: [
+        { name: { contains: q, mode: 'insensitive' } },
+        { phone: { contains: q } },
+        { preferredSociety: { contains: q, mode: 'insensitive' } },
+        { preferredSize: { contains: q, mode: 'insensitive' } },
+      ],
+    };
+
+    const customerWhere: any = {
+      OR: [
+        { name: { contains: q, mode: 'insensitive' } },
+        { phone: { contains: q } },
+        { cnic: { contains: q } },
+      ],
+    };
+
+    if (isAgentOnly) {
+      leadWhere.assignedAgentId = user.id;
+      customerWhere.assignedAgentId = user.id;
+    }
+
     const leads = await prisma.lead.findMany({
-      where: {
-        OR: [
-          { name: { contains: q } },
-          { phone: { contains: q } },
-          { preferredSociety: { contains: q } },
-          { preferredSize: { contains: q } },
-        ],
-      },
+      where: leadWhere,
       take: 5,
       orderBy: { updatedAt: 'desc' },
     });
@@ -26,11 +50,11 @@ export async function GET(request: Request) {
     const properties = await prisma.property.findMany({
       where: {
         OR: [
-          { title: { contains: q } },
-          { plotNumber: { contains: q } },
-          { block: { contains: q } },
-          { sector: { contains: q } },
-          { city: { contains: q } },
+          { title: { contains: q, mode: 'insensitive' } },
+          { plotNumber: { contains: q, mode: 'insensitive' } },
+          { block: { contains: q, mode: 'insensitive' } },
+          { sector: { contains: q, mode: 'insensitive' } },
+          { city: { contains: q, mode: 'insensitive' } },
         ],
       },
       include: { society: true },
@@ -39,13 +63,7 @@ export async function GET(request: Request) {
     });
 
     const customers = await prisma.customer.findMany({
-      where: {
-        OR: [
-          { name: { contains: q } },
-          { phone: { contains: q } },
-          { cnic: { contains: q } },
-        ],
-      },
+      where: customerWhere,
       take: 5,
     });
 
@@ -55,3 +73,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }
+

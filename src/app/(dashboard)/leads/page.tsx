@@ -165,12 +165,16 @@ function LeadsPageContent() {
   // Google Sheets Sync State
   const [syncingGoogleSheets, setSyncingGoogleSheets] = useState(false);
 
+  const effectiveRole = (user?.role || '').toUpperCase().replace(/\s+/g, '_');
+  const isSalesAgent = effectiveRole === 'SALES_AGENT' || effectiveRole === 'AGENT';
+
   const canAssignLeads =
-    user?.role === 'SUPER_ADMIN' ||
-    user?.role === 'ADMIN' ||
-    user?.role === 'MANAGER' ||
-    user?.permissions?.includes('leads.assign') ||
-    user?.permissions?.includes('leads.manage');
+    !isSalesAgent &&
+    (user?.role === 'SUPER_ADMIN' ||
+      user?.role === 'ADMIN' ||
+      user?.role === 'MANAGER' ||
+      user?.permissions?.includes('leads.assign') ||
+      user?.permissions?.includes('leads.manage'));
 
   const handleSyncGoogleSheets = async () => {
     setSyncingGoogleSheets(true);
@@ -467,6 +471,11 @@ function LeadsPageContent() {
 
   // Filtered Leads
   const filteredLeads = leads.filter((l) => {
+    // Strict Tenancy Isolation: Agents can ONLY see leads assigned to them
+    if (isSalesAgent && user?.id) {
+      if (l.assignedAgentId !== user.id) return false;
+    }
+
     const matchesSearch =
       l.name?.toLowerCase().includes(search.toLowerCase()) ||
       l.phone?.includes(search) ||
@@ -634,9 +643,9 @@ function LeadsPageContent() {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Inbound Leads Pipeline</span>
+            <span>{isSalesAgent ? 'My Assigned Leads' : 'Inbound Leads Pipeline'}</span>
             <Badge variant={staleLeadsCount > 0 ? 'danger' : 'info'} className="text-[10px] px-1.5 py-0 h-4">
-              {leads.length} Active
+              {filteredLeads.length} Active
             </Badge>
           </button>
 
@@ -1522,6 +1531,9 @@ function LeadsPageContent() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {(() => {
                   const filteredArchived = archivedLeads.filter((l) => {
+                    if (isSalesAgent && user?.id) {
+                      if (l.assignedAgentId !== user.id && l.disqualifiedById !== user.id) return false;
+                    }
                     const matchesSearch =
                       !search ||
                       l.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -2072,21 +2084,30 @@ function LeadsPageContent() {
             onChange={(e) => setNewLead({ ...newLead, budgetMax: e.target.value })}
           />
 
-          <Select
-            label="Assign Lead To"
-            value={newLead.assignedAgentId}
-            onChange={(e) => setNewLead({ ...newLead, assignedAgentId: e.target.value })}
-          >
-            <option value="">
-              {roundRobinActive ? '⚡ Auto Round-Robin Dispatch (Default)' : '📥 Unassigned Pool (Default)'}
-            </option>
-            <option value="UNASSIGNED">📥 Explicit Unassigned Pool</option>
-            {agents.map((a) => (
-              <option key={a.id} value={a.id}>
-                👤 {a.name} ({a.role || 'Sales Agent'})
+          {canAssignLeads ? (
+            <Select
+              label="Assign Lead To"
+              value={newLead.assignedAgentId}
+              onChange={(e) => setNewLead({ ...newLead, assignedAgentId: e.target.value })}
+            >
+              <option value="">
+                {roundRobinActive ? '⚡ Auto Round-Robin Dispatch (Default)' : '📥 Unassigned Pool (Default)'}
               </option>
-            ))}
-          </Select>
+              <option value="UNASSIGNED">📥 Explicit Unassigned Pool</option>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  👤 {a.name} ({a.role || 'Sales Agent'})
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-between text-xs">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">Assigned Sales Agent:</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                👤 Assigned to You ({user?.name || 'Current Agent'})
+              </span>
+            </div>
+          )}
 
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
             <span className="text-slate-500">System Round-Robin Status:</span>

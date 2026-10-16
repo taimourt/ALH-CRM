@@ -11,21 +11,26 @@ export async function GET(request: Request) {
 
   try {
     const user = await getCurrentUser();
-    const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
 
     const whereConditions: any = {};
     if (stage && stage !== 'ALL') whereConditions.stage = stage;
-    if (isAgentOnly && user) {
+    if (isAgentOnly) {
       whereConditions.agentId = user.id;
     } else if (agentId && agentId !== 'ALL') {
       whereConditions.agentId = agentId;
     }
     if (q) {
       whereConditions.OR = [
-        { title: { contains: q } },
-        { sellerName: { contains: q } },
-        { lead: { name: { contains: q } } },
-        { customer: { name: { contains: q } } },
+        { title: { contains: q, mode: 'insensitive' } },
+        { sellerName: { contains: q, mode: 'insensitive' } },
+        { lead: { name: { contains: q, mode: 'insensitive' } } },
+        { customer: { name: { contains: q, mode: 'insensitive' } } },
       ];
     }
 
@@ -54,7 +59,24 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await request.json();
+
+    if (isAgentOnly && body.leadId) {
+      const lead = await prisma.lead.findUnique({ where: { id: body.leadId } });
+      if (lead && lead.assignedAgentId !== user.id) {
+        return NextResponse.json({ error: 'Forbidden: Lead is not assigned to you' }, { status: 403 });
+      }
+    }
+
+    const targetAgentId = isAgentOnly ? user.id : (body.agentId || user.id);
 
     const newDeal = await prisma.deal.create({
       data: {
@@ -62,7 +84,7 @@ export async function POST(request: Request) {
         leadId: body.leadId || null,
         customerId: body.customerId || null,
         propertyId: body.propertyId,
-        agentId: body.agentId,
+        agentId: targetAgentId,
         managerId: body.managerId || null,
         sellerName: body.sellerName || null,
         sellerPhone: body.sellerPhone || null,

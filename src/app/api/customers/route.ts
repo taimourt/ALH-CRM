@@ -12,7 +12,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const customers = await prisma.customer.findMany({
+      where: isAgentOnly ? { assignedAgentId: user.id } : {},
       include: {
         deals: {
           include: {
@@ -46,12 +50,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await req.json();
     const { name, phone, email, cnic, address, city, assignedAgentId, leadId } = body;
 
     if (!name || !phone) {
       return NextResponse.json({ error: 'Name and Phone are required' }, { status: 400 });
     }
+
+    const targetAgentId = isAgentOnly ? user.id : (assignedAgentId || user.id);
 
     const customer = await prisma.customer.create({
       data: {
@@ -61,7 +70,7 @@ export async function POST(req: Request) {
         cnic: cnic || null,
         address: address || null,
         city: city || 'Islamabad',
-        assignedAgentId: assignedAgentId || user.id,
+        assignedAgentId: targetAgentId,
         leadId: leadId || null,
       },
     });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 import { createCRMNotification } from '@/lib/notifications';
 
 export async function POST(
@@ -7,11 +8,23 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await request.json();
     const { propertyId, amount, tokenAmount, expectedClosingDate } = body;
 
     const lead = await prisma.lead.findUnique({ where: { id: params.id } });
     if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+
+    if (isAgentOnly && lead.assignedAgentId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: You can only convert leads assigned to you' }, { status: 403 });
+    }
 
     const property = await prisma.property.findUnique({ where: { id: propertyId } });
     if (!property) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -25,7 +38,7 @@ export async function POST(
           phone: lead.phone,
           email: lead.email,
           leadId: lead.id,
-          assignedAgentId: lead.assignedAgentId,
+          assignedAgentId: lead.assignedAgentId || user.id,
         },
       });
     }
@@ -37,7 +50,7 @@ export async function POST(
         leadId: lead.id,
         customerId: customer.id,
         propertyId: property.id,
-        agentId: lead.assignedAgentId || 'system',
+        agentId: lead.assignedAgentId || user.id,
         sellerName: property.ownerName || 'Direct Owner',
         sellerPhone: property.ownerPhone || null,
         amount: parseFloat(amount) || property.demandPrice,

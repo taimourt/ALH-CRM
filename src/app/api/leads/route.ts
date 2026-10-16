@@ -12,10 +12,16 @@ export async function GET(request: Request) {
   const nurtureBucket = searchParams.get('nurtureBucket');
   const reason = searchParams.get('reason');
   const serviceCategory = searchParams.get('serviceCategory');
+  const agentId = searchParams.get('agentId');
 
   try {
     const user = await getCurrentUser();
-    const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
 
     const categoryCondition = serviceCategory && serviceCategory !== 'ALL'
       ? serviceCategory === 'CONSTRUCTION'
@@ -33,16 +39,23 @@ export async function GET(request: Request) {
       ...(nurtureBucket && nurtureBucket !== 'ALL' ? { nurtureBucket } : {}),
       ...(reason && reason !== 'ALL' ? { disqualifiedReason: reason } : {}),
       ...categoryCondition,
-      ...(isAgentOnly && user
-        ? {
-            OR: [
-              { assignedAgentId: user.id },
-              { deals: { some: { agentId: user.id } } },
-              ...(archived === 'true' ? [{ disqualifiedById: user.id }] : []),
-            ],
-          }
-        : {}),
     };
+
+    if (isAgentOnly) {
+      // STRICT TENANCY: Sales Agents can ONLY view leads assigned to them.
+      // In the archive tab, they can only view their own assigned leads or leads they personally archived.
+      if (archived === 'true') {
+        whereConditions.OR = [
+          { assignedAgentId: user.id },
+          { disqualifiedById: user.id },
+        ];
+      } else {
+        whereConditions.assignedAgentId = user.id;
+      }
+    } else if (agentId && agentId !== 'ALL') {
+      // Management can filter by agent or inspect unassigned leads
+      whereConditions.assignedAgentId = agentId === 'UNASSIGNED' ? null : agentId;
+    }
 
     const leads = await prisma.lead.findMany({
       where: whereConditions,
@@ -65,7 +78,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
-    const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
 
     const body = await request.json();
 
@@ -74,7 +92,8 @@ export async function POST(request: Request) {
     const isExplicitUnassigned = body.assignedAgentId === 'UNASSIGNED';
 
     let initialAgentId: string | null = null;
-    if (isAgentOnly && user) {
+    if (isAgentOnly) {
+      // Sales Agents can ONLY create leads assigned directly to themselves
       initialAgentId = user.id;
     } else if (isExplicitAgent) {
       initialAgentId = body.assignedAgentId;
@@ -137,7 +156,12 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const user = await getCurrentUser();
-    const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
 
     const body = await request.json();
     const {
@@ -165,7 +189,7 @@ export async function PATCH(request: Request) {
     if (!existingLead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
 
     // Sales Agent can only update their own assigned leads and CANNOT reassign to other agents
-    if (isAgentOnly && user && existingLead.assignedAgentId !== user.id) {
+    if (isAgentOnly && existingLead.assignedAgentId !== user.id) {
       return NextResponse.json({ error: 'Forbidden: You can only update leads assigned to you.' }, { status: 403 });
     }
 

@@ -179,8 +179,12 @@ export default function DashboardPage() {
   // =========================================================================
   const now = new Date().getTime();
 
+  // Sales Agent Personal Numbers
+  const myAssignedLeads = leads.filter((l) => l.assignedAgentId === user?.id);
+
   // Stale Leads Calculation (Untouched >24h in NEW stage)
-  const staleLeads24h = leads.filter((l) => {
+  const staleSourceLeads = isSalesAgent ? myAssignedLeads : leads;
+  const staleLeads24h = staleSourceLeads.filter((l) => {
     if (l.stage !== 'NEW' && l.stage !== 'UNTOUCHED') return false;
     const assignedTime = new Date(l.assignedAt || l.createdAt).getTime();
     const hoursElapsed = (now - assignedTime) / (1000 * 60 * 60);
@@ -211,11 +215,9 @@ export default function DashboardPage() {
     );
   });
 
-  // Sales Agent Personal Numbers
-  const myAssignedLeads = isSalesAgent ? leads : leads.filter((l) => l.assignedAgentId === user?.id);
   const myClosedLeads = myAssignedLeads.filter((l) => l.stage === 'CLOSED_WON');
   const myClosedDeals = deals.filter(
-    (d) => (d.agentId === user?.id || isSalesAgent) && (d.stage === 'CLOSED_WON' || d.stage === 'COMPLETED')
+    (d) => d.agentId === user?.id && (d.stage === 'CLOSED_WON' || d.stage === 'COMPLETED')
   );
   
   const myClosedLeadIds = new Set(myClosedDeals.map((d) => d.leadId).filter(Boolean));
@@ -229,7 +231,7 @@ export default function DashboardPage() {
     ['TOKEN', 'NEGOTIATION', 'SITE_VISIT', 'QUALIFIED'].includes(l.stage)
   );
   const myActiveDeals = deals.filter(
-    (d) => (d.agentId === user?.id || isSalesAgent) && d.stage !== 'CLOSED_WON' && d.stage !== 'CLOSED_LOST'
+    (d) => d.agentId === user?.id && d.stage !== 'CLOSED_WON' && d.stage !== 'CLOSED_LOST'
   );
   const myActiveDealLeadIds = new Set(myActiveDeals.map((d) => d.leadId).filter(Boolean));
   const myExtraActiveLeads = myActiveLeads.filter((l) => !myActiveDealLeadIds.has(l.id));
@@ -436,13 +438,14 @@ export default function DashboardPage() {
   });
 
   // Dynamic Funnel Data for Chart
+  const funnelSourceLeads = isSalesAgent ? myAssignedLeads : leads;
   const liveFunnelData = [
-    { stage: 'New Leads', count: leads.filter((l) => l.stage === 'NEW').length },
-    { stage: 'Contacted', count: leads.filter((l) => l.stage === 'CONTACTED').length },
-    { stage: 'Qualified', count: leads.filter((l) => l.stage === 'QUALIFIED').length },
-    { stage: 'Site Visit', count: leads.filter((l) => l.stage === 'SITE_VISIT').length },
-    { stage: 'Token Paid', count: leads.filter((l) => l.stage === 'TOKEN').length },
-    { stage: 'Closed Won', count: totalClosedCount },
+    { stage: 'New Leads', count: funnelSourceLeads.filter((l) => l.stage === 'NEW').length },
+    { stage: 'Contacted', count: funnelSourceLeads.filter((l) => l.stage === 'CONTACTED').length },
+    { stage: 'Qualified', count: funnelSourceLeads.filter((l) => l.stage === 'QUALIFIED').length },
+    { stage: 'Site Visit', count: funnelSourceLeads.filter((l) => l.stage === 'SITE_VISIT').length },
+    { stage: 'Token Paid', count: funnelSourceLeads.filter((l) => l.stage === 'TOKEN').length },
+    { stage: 'Closed Won', count: isSalesAgent ? myTotalClosedCount : totalClosedCount },
   ];
 
   return (

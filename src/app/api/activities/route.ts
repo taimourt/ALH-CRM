@@ -11,6 +11,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const [
       activityLogs,
       auditLogs,
@@ -21,21 +24,25 @@ export async function GET() {
       recentTasks,
     ] = await Promise.all([
       prisma.activityLog.findMany({
+        where: isAgentOnly ? { userId: user.id } : {},
         include: { user: { select: { id: true, name: true, role: true } } },
         orderBy: { createdAt: 'desc' },
         take: 15,
       }),
       prisma.auditLog.findMany({
+        where: isAgentOnly ? { actorId: user.id } : {},
         include: { actor: { select: { id: true, name: true, role: true } } },
         orderBy: { createdAt: 'desc' },
         take: 10,
       }),
       prisma.lead.findMany({
+        where: isAgentOnly ? { assignedAgentId: user.id } : {},
         include: { assignedAgent: { select: { id: true, name: true } } },
         orderBy: { createdAt: 'desc' },
         take: 10,
       }),
       prisma.payment.findMany({
+        where: isAgentOnly ? { deal: { agentId: user.id } } : {},
         include: {
           customer: { select: { id: true, name: true } },
           deal: { select: { id: true, title: true } },
@@ -45,6 +52,7 @@ export async function GET() {
         take: 8,
       }),
       prisma.deal.findMany({
+        where: isAgentOnly ? { agentId: user.id } : {},
         include: {
           agent: { select: { id: true, name: true } },
           lead: { select: { id: true, name: true } },
@@ -53,6 +61,7 @@ export async function GET() {
         take: 8,
       }),
       prisma.siteVisit.findMany({
+        where: isAgentOnly ? { agentId: user.id } : {},
         include: {
           lead: { select: { id: true, name: true } },
           agent: { select: { id: true, name: true } },
@@ -62,7 +71,10 @@ export async function GET() {
         take: 6,
       }),
       prisma.task.findMany({
-        where: { status: 'COMPLETED' },
+        where: {
+          status: 'COMPLETED',
+          ...(isAgentOnly ? { assignedToId: user.id } : {}),
+        },
         include: { assignedTo: { select: { id: true, name: true } } },
         orderBy: { updatedAt: 'desc' },
         take: 6,

@@ -50,8 +50,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // 4. If path is protected and user is not authenticated, redirect to `/login`
+  // 4. If path is protected and user is not authenticated, redirect to `/login` or return 401 for APIs
   if (!isPublicPath && !token) {
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const loginUrl = new URL('/login', request.url);
     if (pathname !== '/dashboard') {
       loginUrl.searchParams.set('redirect', pathname);

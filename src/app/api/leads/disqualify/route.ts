@@ -27,9 +27,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
     }
 
-    // Role check: Sales agents can only disqualify their own leads; Admins & Managers can disqualify any
-    const isAgentOnly = user.role === 'SALES_AGENT' || user.role === 'AGENT';
-    if (isAgentOnly && existingLead.assignedAgentId && existingLead.assignedAgentId !== user.id) {
+    // Role check: Sales agents can only disqualify their own assigned leads; Admins & Managers can disqualify any
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+    if (isAgentOnly && existingLead.assignedAgentId !== user.id) {
       return NextResponse.json({ error: 'Forbidden: You can only disqualify leads assigned to you.' }, { status: 403 });
     }
 
@@ -113,6 +114,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const { searchParams } = new URL(request.url);
     const leadIdParam = searchParams.get('leadId');
     const body = await request.json().catch(() => ({}));
@@ -130,6 +134,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
     }
 
+    if (isAgentOnly) {
+      const isOwner = existingLead.assignedAgentId === user.id || existingLead.disqualifiedById === user.id;
+      if (!isOwner) {
+        return NextResponse.json(
+          { error: 'Forbidden: You can only reactivate leads that were assigned to you or archived by you.' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Restore lead to active pipeline (Stage: NEW)
     const restoredLead = await prisma.lead.update({
       where: { id: leadId },
@@ -142,6 +156,7 @@ export async function DELETE(request: Request) {
         disqualifiedById: null,
         nurtureBucket: null,
         slaStatus: 'ON_TRACK',
+        ...(isAgentOnly ? { assignedAgentId: user.id, assignedAt: new Date() } : {}),
       },
     });
 

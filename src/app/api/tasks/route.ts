@@ -9,11 +9,16 @@ export async function GET(request: Request) {
 
   try {
     const user = await getCurrentUser();
-    const isAgentOnly = user?.role === 'SALES_AGENT' || user?.role === 'AGENT';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
 
     const whereConditions: any = {
       ...(status && status !== 'ALL' ? { status } : {}),
-      ...(isAgentOnly && user ? { assignedToId: user.id } : {}),
+      ...(isAgentOnly ? { assignedToId: user.id } : {}),
     };
 
     const tasks = await prisma.task.findMany({

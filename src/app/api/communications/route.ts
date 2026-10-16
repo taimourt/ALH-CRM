@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
 import { createCRMNotification } from '@/lib/notifications';
 
@@ -9,12 +10,27 @@ export async function GET(request: Request) {
   const leadId = searchParams.get('leadId');
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const whereConditions: any = {};
     if (channel && channel !== 'ALL') {
       whereConditions.channel = channel;
     }
     if (leadId && leadId !== 'ALL') {
       whereConditions.leadId = leadId;
+    }
+
+    if (isAgentOnly) {
+      whereConditions.OR = [
+        { agentId: user.id },
+        { lead: { assignedAgentId: user.id } },
+      ];
     }
 
     const comms = await prisma.communication.findMany({
@@ -36,8 +52,23 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (user.role || '').toUpperCase().replace(/\s+/g, '_');
+    const isAgentOnly = userRole === 'SALES_AGENT' || userRole === 'AGENT';
+
     const body = await request.json();
     const { type, channel, direction, summary, messageText, leadId, customerId, agentId, phone } = body;
+
+    if (isAgentOnly && leadId) {
+      const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+      if (lead && lead.assignedAgentId !== user.id) {
+        return NextResponse.json({ error: 'Forbidden: You can only communicate with leads assigned to you' }, { status: 403 });
+      }
+    }
 
     let deliveryStatus = 'SENT';
 
@@ -46,6 +77,8 @@ export async function POST(request: Request) {
       const waRes = await sendWhatsAppMessage({ toPhone: phone, messageText: messageText || summary });
       deliveryStatus = waRes.status;
     }
+
+    const targetAgentId = isAgentOnly ? user.id : (agentId || user.id);
 
     const newComm = await prisma.communication.create({
       data: {
@@ -57,7 +90,7 @@ export async function POST(request: Request) {
         status: deliveryStatus,
         leadId: leadId || null,
         customerId: customerId || null,
-        agentId: agentId || 'system',
+        agentId: targetAgentId,
       },
       include: {
         lead: true,
